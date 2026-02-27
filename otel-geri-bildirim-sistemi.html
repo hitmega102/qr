@@ -438,6 +438,7 @@
                                     } else {
                                         const updateData = { ...data };
                                         if (!updateData.password) delete updateData.password;
+                                        // Not: Şifre trigger sayesinde otomatik hash'leniyor
                                         
                                         if (editingItem) {
                                             await supabase.from('users').update(updateData).eq('id', editingItem.id);
@@ -472,17 +473,15 @@
                 setError('');
 
                 try {
+                    // Güvenli login: düz metin karşılaştırması yerine
+                    // pgcrypto tabanlı server-side fonksiyon kullanılıyor
                     const { data, error } = await supabase
-                        .from('users')
-                        .select('*')
-                        .eq('username', username)
-                        .eq('password', password)
-                        .single();
+                        .rpc('login', { p_username: username, p_password: password });
 
-                    if (error || !data) {
+                    if (error || !data || data.length === 0) {
                         setError('Kullanıcı adı veya şifre hatalı!');
                     } else {
-                        onLogin(data);
+                        onLogin(data[0]);
                     }
                 } catch (err) {
                     setError('Giriş hatası!');
@@ -535,11 +534,7 @@
                             </form>
 
                             <div className="login-footer">
-                                <p className="demo-info">Demo Hesaplar</p>
-                                <div className="demo-accounts">
-                                    <span>👑 admin / admin123</span>
-                                    <span>👤 kullanici / kullanici123</span>
-                                </div>
+                                <p className="demo-info">© Premium Hotel Management System</p>
                             </div>
                         </div>
                     </div>
