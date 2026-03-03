@@ -527,6 +527,7 @@
 
         function updateLanguage(lang) {
             currentLang = lang;
+            if (typeof renderMenuList === 'function') renderMenuList();
             const t = translations[lang];
             
             document.getElementById('currentFlag').textContent = t.flag;
@@ -679,11 +680,14 @@
         }
 
         function itemHTML(item) {
+            const lang = currentLang || 'tr';
+            const name = (item.names && item.names[lang]) || item.name || '';
+            const desc = (item.descs && item.descs[lang]) || item.desc || '';
             return `<div class="menu-item">
                 <div class="menu-dot"></div>
                 <div>
-                    <div class="menu-item-name">${item.name}</div>
-                    ${item.desc ? `<div class="menu-item-desc">${item.desc}</div>` : ''}
+                    <div class="menu-item-name">${name}</div>
+                    ${desc ? `<div class="menu-item-desc">${desc}</div>` : ''}
                 </div>
             </div>`;
         }
