@@ -799,7 +799,8 @@
                          onclick="selectCat('${cat.id}')">
                 <span class="cat-item-name">${(cat.names && cat.names.tr) || cat.name}</span>
                 <span class="cat-item-count">${count}</span>
-                <button class="cat-delete-btn" onclick="deleteCategory(event,'${cat.id}','${(cat.names&&cat.names.tr)||cat.name}')">×</button>
+                <button class="cat-delete-btn" title="Düzenle" onclick="event.stopPropagation();openCatModal('${cat.id}')">✏️</button>
+                <button class="cat-delete-btn" title="Sil" onclick="deleteCategory(event,'${cat.id}','${(cat.names&&cat.names.tr)||cat.name}')">×</button>
             </div>`;
         }).join('');
     }
