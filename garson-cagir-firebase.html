@@ -247,6 +247,66 @@
             background: #667eea;
             color: white;
         }
+
+        /* MENÜ */
+        .menu-section { margin-top: 20px; }
+
+        .menu-divider {
+            display: flex; align-items: center; gap: 10px;
+            color: #bbb; font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+            margin-bottom: 16px;
+        }
+        .menu-divider::before, .menu-divider::after {
+            content: ''; flex: 1; height: 1px; background: #e0e0e0;
+        }
+
+        .menu-category-tabs {
+            display: flex; gap: 8px; overflow-x: auto;
+            padding-bottom: 6px; scrollbar-width: none; margin-bottom: 14px;
+        }
+        .menu-category-tabs::-webkit-scrollbar { display: none; }
+
+        .menu-tab {
+            background: #f0f0f0; color: #667eea; border: none; border-radius: 20px;
+            padding: 7px 14px; font-size: 12px; font-weight: 700; font-family: inherit;
+            cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
+        }
+        .menu-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; box-shadow: 0 3px 10px rgba(102,126,234,0.3);
+        }
+
+        .menu-list {
+            display: flex; flex-direction: column;
+            max-height: 320px; overflow-y: auto;
+            scrollbar-width: thin; scrollbar-color: #e0e0e0 transparent;
+        }
+
+        .menu-cat-header {
+            font-size: 10px; font-weight: 800; color: #a78bfa;
+            letter-spacing: 1px; text-transform: uppercase; padding: 10px 2px 4px;
+        }
+
+        .menu-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 9px 4px; border-bottom: 1px solid #f0f0f0;
+        }
+        .menu-item:last-child { border-bottom: none; }
+
+        .menu-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #a78bfa; flex-shrink: 0; margin-top: 5px;
+        }
+        .menu-item-name { font-size: 14px; font-weight: 700; color: #222; line-height: 1.3; }
+        .menu-item-desc { font-size: 12px; color: #999; font-weight: 500; margin-top: 1px; }
+
+        .menu-allergen-note {
+            background: #fff9e6; border: 1px solid #fde68a; border-radius: 10px;
+            padding: 10px 14px; font-size: 12px; color: #92400e;
+            font-weight: 600; text-align: center; margin-top: 14px;
+        }
+
+        .menu-loading { text-align: center; padding: 20px; color: #bbb; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -286,6 +346,18 @@
             <div class="status-panel" id="statusPanel">
                 <h3 id="statusTitle">⏱️ Talebiniz Alındı</h3>
                 <p id="statusText">Garsonumuz en kısa sürede masanıza gelecektir.</p>
+            </div>
+
+            <!-- MENÜ -->
+            <div class="menu-section">
+                <div class="menu-divider">BUGÜNÜN MENÜSÜ</div>
+                <div class="menu-category-tabs" id="menuTabs">
+                    <div class="menu-loading">Yükleniyor...</div>
+                </div>
+                <div class="menu-list" id="menuList"></div>
+                <div class="menu-allergen-note">
+                    ℹ️ Alerjeniniz varsa lütfen garsonumuzu bilgilendirin.
+                </div>
             </div>
         </div>
     </div>
@@ -543,6 +615,86 @@
             );
             showStatus(t.waiterStatus);
         }
+
+        // ── MENÜ (Firebase'den) ────────────────────────────────
+        import { collection as col2, onSnapshot as onSnap2,
+                 query as q2, orderBy as ob2 }
+            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let allCategories = [];
+        let allFoods      = [];
+        let currentMenuCat = '__all__';
+
+        // Kategorileri dinle
+        onSnap2(q2(col2(db, "menuCategories"), ob2("order")), snap => {
+            allCategories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderMenuTabs();
+            renderMenuList();
+        });
+
+        // Yemekleri dinle
+        onSnap2(col2(db, "menuItems"), snap => {
+            allFoods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderMenuTabs();
+            renderMenuList();
+        });
+
+        function renderMenuTabs() {
+            const tabs = document.getElementById('menuTabs');
+            if (allCategories.length === 0) {
+                tabs.innerHTML = '';
+                return;
+            }
+            tabs.innerHTML =
+                `<button class="menu-tab ${currentMenuCat === '__all__' ? 'active' : ''}"
+                     onclick="setMenuCat('__all__', this)">Tümü</button>` +
+                allCategories.map(c =>
+                    `<button class="menu-tab ${currentMenuCat === c.id ? 'active' : ''}"
+                         onclick="setMenuCat('${c.id}', this)">${c.name}</button>`
+                ).join('');
+        }
+
+        function renderMenuList() {
+            const list = document.getElementById('menuList');
+            const activeFoods = allFoods.filter(f => f.active !== false);
+
+            if (allCategories.length === 0 || activeFoods.length === 0) {
+                list.innerHTML = '<div class="menu-loading">Menü yakında güncellenecek.</div>';
+                return;
+            }
+
+            if (currentMenuCat === '__all__') {
+                list.innerHTML = allCategories.map(cat => {
+                    const items = activeFoods.filter(f => f.cat === cat.id);
+                    if (items.length === 0) return '';
+                    return `<div class="menu-cat-header">${cat.name}</div>` +
+                        items.map(itemHTML).join('');
+                }).join('');
+            } else {
+                const items = activeFoods.filter(f => f.cat === currentMenuCat);
+                list.innerHTML = items.length
+                    ? items.map(itemHTML).join('')
+                    : '<div class="menu-loading">Bu kategoride aktif yemek yok.</div>';
+            }
+        }
+
+        function itemHTML(item) {
+            return `<div class="menu-item">
+                <div class="menu-dot"></div>
+                <div>
+                    <div class="menu-item-name">${item.name}</div>
+                    ${item.desc ? `<div class="menu-item-desc">${item.desc}</div>` : ''}
+                </div>
+            </div>`;
+        }
+
+        window.setMenuCat = function(id, el) {
+            currentMenuCat = id;
+            document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderMenuList();
+        };
+        // ── MENÜ SONU ──────────────────────────────────────────
     </script>
 </body>
 </html>
