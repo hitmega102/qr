@@ -313,6 +313,28 @@
         .toggle-btn:hover { opacity: 0.75; }
 
         /* ── FORM MODAL ── */
+
+        .modal { width: 560px; max-height: 88vh; overflow-y: auto; }
+
+        .lang-tabs {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-bottom: 14px; border-bottom: 1px solid #eee; padding-bottom: 12px;
+        }
+        .lang-tab {
+            padding: 5px 11px; border: 2px solid #e0e0e0; border-radius: 20px;
+            font-size: 12px; font-weight: 700; cursor: pointer; background: white;
+            font-family: inherit; transition: all 0.2s; color: #666;
+        }
+        .lang-tab.active { border-color: #667eea; background: #667eea; color: white; }
+
+        .lang-panel { display: none; }
+        .lang-panel.active { display: block; }
+
+        .lang-panel-header {
+            font-size: 11px; font-weight: 800; color: #a78bfa;
+            letter-spacing: 1px; text-transform: uppercase;
+            margin-bottom: 10px; padding: 6px 0 0;
+        }
         .modal-overlay {
             display: none;
             position: fixed;
@@ -501,15 +523,113 @@
     <div class="modal">
         <h3 id="modalTitle">Yemek Ekle</h3>
         <input type="hidden" id="editFoodId">
-        <div class="form-group">
-            <label>Yemek Adı</label>
-            <input type="text" id="foodName" placeholder="Izgara Köfte">
+
+        <div class="lang-tabs" id="langTabs">
+            <button class="lang-tab active" onclick="switchLangTab('tr')">🇹🇷 Türkçe</button><button class="lang-tab " onclick="switchLangTab('en')">🇬🇧 İngilizce</button><button class="lang-tab " onclick="switchLangTab('ru')">🇷🇺 Rusça</button><button class="lang-tab " onclick="switchLangTab('de')">🇩🇪 Almanca</button><button class="lang-tab " onclick="switchLangTab('pl')">🇵🇱 Lehçe</button><button class="lang-tab " onclick="switchLangTab('fr')">🇫🇷 Fransızca</button><button class="lang-tab " onclick="switchLangTab('nl')">🇳🇱 Hollandaca</button><button class="lang-tab " onclick="switchLangTab('cs')">🇨🇿 Çekçe</button><button class="lang-tab " onclick="switchLangTab('ro')">🇷🇴 Romence</button>
         </div>
-        <div class="form-group">
-            <label>Açıklama</label>
-            <input type="text" id="foodDesc" placeholder="Yanında pilav ve ızgara sebze">
-        </div>
-        <div class="form-group">
+
+        
+                <div class="lang-panel active" id="panel_tr">
+                    <div class="lang-panel-header">🇹🇷 Türkçe</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_tr" placeholder="Izgara Köfte">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_tr" placeholder="Yanında pilav ve ızgara sebze">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_en">
+                    <div class="lang-panel-header">🇬🇧 İngilizce</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_en" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_en" placeholder="">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_ru">
+                    <div class="lang-panel-header">🇷🇺 Rusça</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_ru" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_ru" placeholder="">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_de">
+                    <div class="lang-panel-header">🇩🇪 Almanca</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_de" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_de" placeholder="">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_pl">
+                    <div class="lang-panel-header">🇵🇱 Lehçe</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_pl" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_pl" placeholder="">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_fr">
+                    <div class="lang-panel-header">🇫🇷 Fransızca</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_fr" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_fr" placeholder="">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_nl">
+                    <div class="lang-panel-header">🇳🇱 Hollandaca</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_nl" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_nl" placeholder="">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_cs">
+                    <div class="lang-panel-header">🇨🇿 Çekçe</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_cs" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_cs" placeholder="">
+                    </div>
+                </div>
+                <div class="lang-panel " id="panel_ro">
+                    <div class="lang-panel-header">🇷🇴 Romence</div>
+                    <div class="form-group">
+                        <label>Yemek Adı</label>
+                        <input type="text" id="foodName_ro" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="foodDesc_ro" placeholder="">
+                    </div>
+                </div>
+
+        <div class="form-group" style="margin-top:10px;">
             <label>Kategori</label>
             <select id="foodCat"></select>
         </div>
@@ -701,8 +821,25 @@
     window.openAddFood = function() {
         document.getElementById('modalTitle').textContent = 'Yemek Ekle';
         document.getElementById('editFoodId').value = '';
-        document.getElementById('foodName').value   = '';
-        document.getElementById('foodDesc').value   = '';
+                document.getElementById('foodName_tr').value = '';
+        document.getElementById('foodDesc_tr').value = '';
+        document.getElementById('foodName_en').value = '';
+        document.getElementById('foodDesc_en').value = '';
+        document.getElementById('foodName_ru').value = '';
+        document.getElementById('foodDesc_ru').value = '';
+        document.getElementById('foodName_de').value = '';
+        document.getElementById('foodDesc_de').value = '';
+        document.getElementById('foodName_pl').value = '';
+        document.getElementById('foodDesc_pl').value = '';
+        document.getElementById('foodName_fr').value = '';
+        document.getElementById('foodDesc_fr').value = '';
+        document.getElementById('foodName_nl').value = '';
+        document.getElementById('foodDesc_nl').value = '';
+        document.getElementById('foodName_cs').value = '';
+        document.getElementById('foodDesc_cs').value = '';
+        document.getElementById('foodName_ro').value = '';
+        document.getElementById('foodDesc_ro').value = '';
+        switchLangTab('tr');
         populateCatSelect();
         document.getElementById('foodModal').classList.add('show');
     };
@@ -712,11 +849,36 @@
         if (!food) return;
         document.getElementById('modalTitle').textContent  = 'Yemeği Düzenle';
         document.getElementById('editFoodId').value        = id;
-        document.getElementById('foodName').value          = food.name;
-        document.getElementById('foodDesc').value          = food.desc || '';
+                document.getElementById('foodName_tr').value = food.names?.tr || ('tr' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_tr').value = food.descs?.tr || ('tr' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_en').value = food.names?.en || ('en' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_en').value = food.descs?.en || ('en' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_ru').value = food.names?.ru || ('ru' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_ru').value = food.descs?.ru || ('ru' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_de').value = food.names?.de || ('de' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_de').value = food.descs?.de || ('de' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_pl').value = food.names?.pl || ('pl' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_pl').value = food.descs?.pl || ('pl' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_fr').value = food.names?.fr || ('fr' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_fr').value = food.descs?.fr || ('fr' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_nl').value = food.names?.nl || ('nl' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_nl').value = food.descs?.nl || ('nl' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_cs').value = food.names?.cs || ('cs' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_cs').value = food.descs?.cs || ('cs' === 'tr' ? food.desc || '' : '');
+        document.getElementById('foodName_ro').value = food.names?.ro || ('ro' === 'tr' ? food.name || '' : '');
+        document.getElementById('foodDesc_ro').value = food.descs?.ro || ('ro' === 'tr' ? food.desc || '' : '');
+        switchLangTab('tr');
         populateCatSelect();
-        document.getElementById('foodCat').value           = food.cat;
+        document.getElementById('foodCat').value = food.cat;
         document.getElementById('foodModal').classList.add('show');
+    };
+
+
+    window.switchLangTab = function(code) {
+        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.lang-tab[onclick="switchLangTab('${code}')"]`).classList.add('active');
+        document.getElementById('panel_' + code).classList.add('active');
     };
 
     window.closeModal = function() {
@@ -724,21 +886,39 @@
     };
 
     window.saveFood = async function() {
-        const id   = document.getElementById('editFoodId').value;
-        const name = document.getElementById('foodName').value.trim();
-        const desc = document.getElementById('foodDesc').value.trim();
-        const cat  = document.getElementById('foodCat').value;
+        const id  = document.getElementById('editFoodId').value;
+        const cat = document.getElementById('foodCat').value;
+                const name_tr = document.getElementById('foodName_tr').value.trim();
+        const name_en = document.getElementById('foodName_en').value.trim();
+        const name_ru = document.getElementById('foodName_ru').value.trim();
+        const name_de = document.getElementById('foodName_de').value.trim();
+        const name_pl = document.getElementById('foodName_pl').value.trim();
+        const name_fr = document.getElementById('foodName_fr').value.trim();
+        const name_nl = document.getElementById('foodName_nl').value.trim();
+        const name_cs = document.getElementById('foodName_cs').value.trim();
+        const name_ro = document.getElementById('foodName_ro').value.trim();
+                const desc_tr = document.getElementById('foodDesc_tr').value.trim();
+        const desc_en = document.getElementById('foodDesc_en').value.trim();
+        const desc_ru = document.getElementById('foodDesc_ru').value.trim();
+        const desc_de = document.getElementById('foodDesc_de').value.trim();
+        const desc_pl = document.getElementById('foodDesc_pl').value.trim();
+        const desc_fr = document.getElementById('foodDesc_fr').value.trim();
+        const desc_nl = document.getElementById('foodDesc_nl').value.trim();
+        const desc_cs = document.getElementById('foodDesc_cs').value.trim();
+        const desc_ro = document.getElementById('foodDesc_ro').value.trim();
+        if (!name_tr) { showToast('Türkçe yemek adı boş olamaz ⚠️'); return; }
 
-        if (!name) { showToast('Yemek adı boş olamaz ⚠️'); return; }
+        const names = {tr: name_tr, en: name_en, ru: name_ru, de: name_de, pl: name_pl, fr: name_fr, nl: name_nl, cs: name_cs, ro: name_ro};
+        const descs = {tr: desc_tr, en: desc_en, ru: desc_ru, de: desc_de, pl: desc_pl, fr: desc_fr, nl: desc_nl, cs: desc_cs, ro: desc_ro};
 
         if (id) {
-            // Düzenle
-            await updateDoc(doc(db, "menuItems", id), { name, desc, cat });
+            await updateDoc(doc(db, "menuItems", id), { names, descs, cat,
+                name: name_tr, desc: desc_tr });
             showToast('Yemek güncellendi ✅', 'green');
         } else {
-            // Yeni ekle
             await addDoc(collection(db, "menuItems"), {
-                name, desc, cat,
+                names, descs, cat,
+                name: name_tr, desc: desc_tr,
                 active: true,
                 order: foods.filter(f => f.cat === cat).length,
                 createdAt: serverTimestamp()
