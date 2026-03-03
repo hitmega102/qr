@@ -661,6 +661,7 @@
 
         function renderMenuList() {
             const list = document.getElementById('menuList');
+            const lang = currentLang || 'tr';
             const activeFoods = allFoods.filter(f => f.active !== false);
 
             if (allCategories.length === 0 || activeFoods.length === 0) {
