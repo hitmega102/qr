@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menü Yönetim Paneli</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        /* ── GİRİŞ EKRANI ── */
+        #loginScreen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 340px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 22px;
+        }
+
+        .login-box p {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            text-align: center;
+            letter-spacing: 3px;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-error {
+            color: #ef4444;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        /* ── GENEL BUTONLAR ── */
+        .btn {
+            padding: 11px 20px;
+            border: none;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            font-size: 15px;
+        }
+
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        .btn-outline:hover { background: #f0f0ff; }
+
+        .btn-sm { padding: 7px 12px; font-size: 12px; }
+
+        /* ── ANA PANEL ── */
+        #adminPanel { display: none; }
+
+        .topbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+
+        .topbar h1 { font-size: 20px; }
+        .topbar span { font-size: 13px; opacity: 0.8; }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .main-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ── KATEGORİ PANELİ ── */
+        .panel {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #f8f9ff;
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h2 {
+            font-size: 15px;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .panel-body { padding: 16px 20px; }
+
+        .cat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+
+        .cat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border: 2px solid transparent;
+        }
+
+        .cat-item:hover { background: #f5f5ff; }
+        .cat-item.active { background: #f0f0ff; border-color: #667eea; }
+
+        .cat-item-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .cat-item-count {
+            font-size: 11px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-weight: 700;
+        }
+
+        .cat-delete-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: color 0.2s;
+        }
+        .cat-delete-btn:hover { color: #ef4444; }
+
+        .add-cat-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .add-cat-row input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .add-cat-row input:focus { outline: none; border-color: #667eea; }
+
+        /* ── YEMEK LİSTESİ PANELİ ── */
+        .food-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .food-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .food-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            transition: border-color 0.2s;
+        }
+
+        .food-item:hover { border-color: #c7d2fe; }
+
+        .food-item.inactive {
+            opacity: 0.45;
+            background: #fafafa;
+        }
+
+        .food-item-info { flex: 1; min-width: 0; }
+
+        .food-item-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .food-item-desc {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .food-item-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            color: #999;
+        }
+
+        .toggle-btn.active-state {
+            border-color: #10b981;
+            color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .toggle-btn:hover { opacity: 0.75; }
+
+        /* ── FORM MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            width: 440px;
+            max-width: 95vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            animation: popIn 0.2s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        .modal h3 {
+            font-size: 17px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 11px 13px;
+            border: 2px solid #e0e0e0;
+            border-radius: 9px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e1b4b;
+            color: white;
+            padding: 13px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            z-index: 999;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.green { background: #065f46; }
+        .toast.red   { background: #7f1d1d; }
+
+        /* ── BOŞ DURUM ── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #bbb;
+        }
+        .empty-state div { font-size: 32px; margin-bottom: 10px; }
+        .empty-state p { font-size: 14px; }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        @media (max-width: 700px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- GİRİŞ EKRANI -->
+<div id="loginScreen">
+    <div class="login-box">
+        <h2>🔐 Yönetim Paneli</h2>
+        <p>Menü düzenlemek için şifreyi girin</p>
+        <input type="password" id="passwordInput" placeholder="••••••••"
+               onkeydown="if(event.key==='Enter') checkPassword()">
+        <div class="login-error" id="loginError">❌ Hatalı şifre</div>
+        <button class="btn btn-primary" onclick="checkPassword()">Giriş Yap</button>
+    </div>
+</div>
+
+<!-- ANA PANEL -->
+<div id="adminPanel">
+    <div class="topbar">
+        <div>
+            <h1>🍽️ Menü Yönetim Paneli</h1>
+            <span>Firebase bağlı — değişiklikler anında yayınlanır</span>
+        </div>
+        <div class="topbar-right">
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <!-- KATEGORİLER -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>📂 Kategoriler</h2>
+            </div>
+            <div class="panel-body">
+                <div class="cat-list" id="catList">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+                <div class="add-cat-row">
+                    <input type="text" id="newCatInput" placeholder="Yeni kategori adı..."
+                           onkeydown="if(event.key==='Enter') addCategory()">
+                    <button class="btn btn-success btn-sm" onclick="addCategory()">+ Ekle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- YEMEKLER -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="food-panel-header" style="width:100%">
+                    <h2>🥘 <span id="activeCatTitle">Kategori Seçin</span></h2>
+                    <button class="btn btn-primary btn-sm" onclick="openAddFood()" id="addFoodBtn"
+                            style="display:none;">+ Yemek Ekle</button>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div id="foodList">
+                    <div class="empty-state">
+                        <div>👈</div>
+                        <p>Sol taraftan bir kategori seçin</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- YEMEK EKLE/DÜZENLE MODAL -->
+<div class="modal-overlay" id="foodModal">
+    <div class="modal">
+        <h3 id="modalTitle">Yemek Ekle</h3>
+        <input type="hidden" id="editFoodId">
+        <div class="form-group">
+            <label>Yemek Adı</label>
+            <input type="text" id="foodName" placeholder="Izgara Köfte">
+        </div>
+        <div class="form-group">
+            <label>Açıklama</label>
+            <input type="text" id="foodDesc" placeholder="Yanında pilav ve ızgara sebze">
+        </div>
+        <div class="form-group">
+            <label>Kategori</label>
+            <select id="foodCat"></select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">İptal</button>
+            <button class="btn btn-primary" onclick="saveFood()">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp }           from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc,
+             addDoc, updateDoc, deleteDoc,
+             onSnapshot, query, orderBy,
+             serverTimestamp }          from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const PANEL_PASSWORD = "1234"; // ← Şifreyi buradan değiştirin
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAayB7410stMdKXgebXlQ2sSe08cy48SI0",
+        authDomain: "noxinn-qr.firebaseapp.com",
+        projectId: "noxinn-qr",
+        storageBucket: "noxinn-qr.firebasestorage.app",
+        messagingSenderId: "757343265554",
+        appId: "1:757343265554:web:b37008a2ab2a87adfbec9cb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // ── Şifre ──────────────────────────────────────────────
+    window.checkPassword = function() {
+        const val = document.getElementById('passwordInput').value;
+        if (val === PANEL_PASSWORD) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display  = 'block';
+            startListeners();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+        }
+    };
+
+    window.logout = function() {
+        document.getElementById('adminPanel').style.display  = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('passwordInput').value = '';
+    };
+
+    // ── State ───────────────────────────────────────────────
+    let categories = []; // [{id, name, order}]
+    let foods      = []; // [{id, name, desc, cat, active}]
+    let activeCat  = null;
+
+    // ── Realtime listeners ──────────────────────────────────
+    function startListeners() {
+        // Kategoriler
+        onSnapshot(query(collection(db, "menuCategories"), orderBy("order")), snap => {
+            categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderCategories();
+            renderFoods();
+        });
+
+        // Yemekler
+        onSnapshot(collection(db, "menuItems"), snap => {
+            foods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderCategories(); // item sayılarını güncelle
+            renderFoods();
+        });
+    }
+
+    // ── Kategoriler ─────────────────────────────────────────
+    function renderCategories() {
+        const list = document.getElementById('catList');
+        if (categories.length === 0) {
+            list.innerHTML = '<p style="color:#bbb;font-size:13px;text-align:center;padding:10px">Henüz kategori yok</p>';
+            return;
+        }
+        list.innerHTML = categories.map(cat => {
+            const count = foods.filter(f => f.cat === cat.id).length;
+            return `<div class="cat-item ${activeCat === cat.id ? 'active' : ''}"
+                         onclick="selectCat('${cat.id}')">
+                <span class="cat-item-name">${cat.name}</span>
+                <span class="cat-item-count">${count}</span>
+                <button class="cat-delete-btn" onclick="deleteCategory(event,'${cat.id}','${cat.name}')">×</button>
+            </div>`;
+        }).join('');
+    }
+
+    window.selectCat = function(id) {
+        activeCat = id;
+        renderCategories();
+        renderFoods();
+    };
+
+    window.addCategory = async function() {
+        const input = document.getElementById('newCatInput');
+        const name  = input.value.trim();
+        if (!name) return;
+        await addDoc(collection(db, "menuCategories"), {
+            name,
+            order: categories.length,
+            createdAt: serverTimestamp()
+        });
+        input.value = '';
+        showToast('Kategori eklendi ✅', 'green');
+    };
+
+    window.deleteCategory = async function(e, id, name) {
+        e.stopPropagation();
+        const itemCount = foods.filter(f => f.cat === id).length;
+        const msg = itemCount > 0
+            ? `"${name}" kategorisini ve içindeki ${itemCount} yemeği silmek istediğinize emin misiniz?`
+            : `"${name}" kategorisini silmek istediğinize emin misiniz?`;
+        if (!confirm(msg)) return;
+
+        // Kategorideki yemekleri de sil
+        for (const food of foods.filter(f => f.cat === id)) {
+            await deleteDoc(doc(db, "menuItems", food.id));
+        }
+        await deleteDoc(doc(db, "menuCategories", id));
+        if (activeCat === id) activeCat = null;
+        showToast('Kategori silindi', 'red');
+    };
+
+    // ── Yemekler ────────────────────────────────────────────
+    function renderFoods() {
+        const container = document.getElementById('foodList');
+        const btn       = document.getElementById('addFoodBtn');
+        const title     = document.getElementById('activeCatTitle');
+
+        if (!activeCat) {
+            btn.style.display = 'none';
+            title.textContent = 'Kategori Seçin';
+            container.innerHTML = `<div class="empty-state"><div>👈</div><p>Sol taraftan bir kategori seçin</p></div>`;
+            return;
+        }
+
+        const cat = categories.find(c => c.id === activeCat);
+        title.textContent = cat ? cat.name : '';
+        btn.style.display = 'inline-block';
+
+        const items = foods.filter(f => f.cat === activeCat);
+        if (items.length === 0) {
+            container.innerHTML = `<div class="empty-state"><div>🍽️</div><p>Bu kategoride henüz yemek yok</p></div>`;
+            return;
+        }
+
+        container.innerHTML = `<div class="food-list">` + items.map(item => `
+            <div class="food-item ${item.active === false ? 'inactive' : ''}">
+                <div class="food-item-info">
+                    <div class="food-item-name">${item.name}</div>
+                    <div class="food-item-desc">${item.desc || '—'}</div>
+                </div>
+                <div class="food-item-actions">
+                    <button class="toggle-btn ${item.active !== false ? 'active-state' : ''}"
+                            onclick="toggleFood('${item.id}', ${item.active !== false})">
+                        ${item.active !== false ? '✓ Aktif' : '✗ Gizli'}
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="openEditFood('${item.id}')">Düzenle</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${item.id}', '${item.name.replace(/'/g,"\\'")}')">Sil</button>
+                </div>
+            </div>`).join('') + `</div>`;
+    }
+
+    window.toggleFood = async function(id, currentlyActive) {
+        await updateDoc(doc(db, "menuItems", id), { active: !currentlyActive });
+        showToast(currentlyActive ? 'Yemek gizlendi' : 'Yemek aktif edildi ✅', currentlyActive ? '' : 'green');
+    };
+
+    window.deleteFoodItem = async function(id, name) {
+        if (!confirm(`"${name}" yemeğini silmek istediğinize emin misiniz?`)) return;
+        await deleteDoc(doc(db, "menuItems", id));
+        showToast('Yemek silindi', 'red');
+    };
+
+    // ── Modal ────────────────────────────────────────────────
+    function populateCatSelect() {
+        const sel = document.getElementById('foodCat');
+        sel.innerHTML = categories.map(c =>
+            `<option value="${c.id}" ${c.id === activeCat ? 'selected' : ''}>${c.name}</option>`
+        ).join('');
+    }
+
+    window.openAddFood = function() {
+        document.getElementById('modalTitle').textContent = 'Yemek Ekle';
+        document.getElementById('editFoodId').value = '';
+        document.getElementById('foodName').value   = '';
+        document.getElementById('foodDesc').value   = '';
+        populateCatSelect();
+        document.getElementById('foodModal').classList.add('show');
+    };
+
+    window.openEditFood = function(id) {
+        const food = foods.find(f => f.id === id);
+        if (!food) return;
+        document.getElementById('modalTitle').textContent  = 'Yemeği Düzenle';
+        document.getElementById('editFoodId').value        = id;
+        document.getElementById('foodName').value          = food.name;
+        document.getElementById('foodDesc').value          = food.desc || '';
+        populateCatSelect();
+        document.getElementById('foodCat').value           = food.cat;
+        document.getElementById('foodModal').classList.add('show');
+    };
+
+    window.closeModal = function() {
+        document.getElementById('foodModal').classList.remove('show');
+    };
+
+    window.saveFood = async function() {
+        const id   = document.getElementById('editFoodId').value;
+        const name = document.getElementById('foodName').value.trim();
+        const desc = document.getElementById('foodDesc').value.trim();
+        const cat  = document.getElementById('foodCat').value;
+
+        if (!name) { showToast('Yemek adı boş olamaz ⚠️'); return; }
+
+        if (id) {
+            // Düzenle
+            await updateDoc(doc(db, "menuItems", id), { name, desc, cat });
+            showToast('Yemek güncellendi ✅', 'green');
+        } else {
+            // Yeni ekle
+            await addDoc(collection(db, "menuItems"), {
+                name, desc, cat,
+                active: true,
+                order: foods.filter(f => f.cat === cat).length,
+                createdAt: serverTimestamp()
+            });
+            showToast('Yemek eklendi ✅', 'green');
+        }
+        closeModal();
+    };
+
+    // ── Toast ────────────────────────────────────────────────
+    function showToast(msg, type = '') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + type;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+    window.showToast = showToast;
+
+    // Modal dışına tıklayınca kapat
+    document.getElementById('foodModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+</body>
+</html>
