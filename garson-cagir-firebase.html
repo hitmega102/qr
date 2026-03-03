@@ -507,6 +507,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        let menuReady = false;
+
         // URL'den masa numarasını al
         const urlParams = new URLSearchParams(window.location.search);
         const masaNumarasi = urlParams.get('masa') || '12';
@@ -527,7 +529,7 @@
 
         function updateLanguage(lang) {
             currentLang = lang;
-            if (typeof allFoods !== 'undefined' && typeof renderMenuList === 'function') renderMenuList();
+            if (menuReady) renderMenuList();
             const t = translations[lang];
             
             document.getElementById('currentFlag').textContent = t.flag;
@@ -636,6 +638,7 @@
         // Yemekleri dinle
         onSnap2(col2(db, "menuItems"), snap => {
             allFoods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            menuReady = true;
             renderMenuTabs();
             renderMenuList();
         });
