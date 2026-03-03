@@ -335,6 +335,9 @@
             letter-spacing: 1px; text-transform: uppercase;
             margin-bottom: 10px; padding: 6px 0 0;
         }
+
+        /* KATEGORİ MODAL */
+        #catModal .modal { width: 520px; }
         .modal-overlay {
             display: none;
             position: fixed;
@@ -489,9 +492,7 @@
                     <div class="loading">Yükleniyor...</div>
                 </div>
                 <div class="add-cat-row">
-                    <input type="text" id="newCatInput" placeholder="Yeni kategori adı..."
-                           onkeydown="if(event.key==='Enter') addCategory()">
-                    <button class="btn btn-success btn-sm" onclick="addCategory()">+ Ekle</button>
+                    <button class="btn btn-success" style="width:100%" onclick="openCatModal()">+ Kategori Ekle</button>
                 </div>
             </div>
         </div>
@@ -525,7 +526,7 @@
         <input type="hidden" id="editFoodId">
 
         <div class="lang-tabs" id="langTabs">
-            <button class="lang-tab active" onclick="switchLangTab('tr')">🇹🇷 Türkçe</button><button class="lang-tab " onclick="switchLangTab('en')">🇬🇧 İngilizce</button><button class="lang-tab " onclick="switchLangTab('ru')">🇷🇺 Rusça</button><button class="lang-tab " onclick="switchLangTab('de')">🇩🇪 Almanca</button><button class="lang-tab " onclick="switchLangTab('pl')">🇵🇱 Lehçe</button><button class="lang-tab " onclick="switchLangTab('fr')">🇫🇷 Fransızca</button><button class="lang-tab " onclick="switchLangTab('nl')">🇳🇱 Hollandaca</button><button class="lang-tab " onclick="switchLangTab('cs')">🇨🇿 Çekçe</button><button class="lang-tab " onclick="switchLangTab('ro')">🇷🇴 Romence</button>
+            <button class="lang-tab active" onclick="switchLangTab('food','tr')">🇹🇷 Türkçe</button><button class="lang-tab " onclick="switchLangTab('en')">🇬🇧 İngilizce</button><button class="lang-tab " onclick="switchLangTab('ru')">🇷🇺 Rusça</button><button class="lang-tab " onclick="switchLangTab('de')">🇩🇪 Almanca</button><button class="lang-tab " onclick="switchLangTab('pl')">🇵🇱 Lehçe</button><button class="lang-tab " onclick="switchLangTab('fr')">🇫🇷 Fransızca</button><button class="lang-tab " onclick="switchLangTab('nl')">🇳🇱 Hollandaca</button><button class="lang-tab " onclick="switchLangTab('cs')">🇨🇿 Çekçe</button><button class="lang-tab " onclick="switchLangTab('ro')">🇷🇴 Romence</button>
         </div>
 
         
@@ -640,6 +641,86 @@
     </div>
 </div>
 
+
+<!-- KATEGORİ EKLE/DÜZENLE MODAL -->
+<div class="modal-overlay" id="catModal">
+    <div class="modal">
+        <h3 id="catModalTitle">Kategori Ekle</h3>
+        <input type="hidden" id="editCatId">
+        <div class="lang-tabs">
+            <button class="lang-tab active" onclick="switchLangTab('cat','tr')">🇹🇷 Türkçe</button><button class="lang-tab " onclick="switchLangTab('cat','en')">🇬🇧 İngilizce</button><button class="lang-tab " onclick="switchLangTab('cat','ru')">🇷🇺 Rusça</button><button class="lang-tab " onclick="switchLangTab('cat','de')">🇩🇪 Almanca</button><button class="lang-tab " onclick="switchLangTab('cat','pl')">🇵🇱 Lehçe</button><button class="lang-tab " onclick="switchLangTab('cat','fr')">🇫🇷 Fransızca</button><button class="lang-tab " onclick="switchLangTab('cat','nl')">🇳🇱 Hollandaca</button><button class="lang-tab " onclick="switchLangTab('cat','cs')">🇨🇿 Çekçe</button><button class="lang-tab " onclick="switchLangTab('cat','ro')">🇷🇴 Romence</button>
+        </div>
+        
+            <div class="lang-panel active" id="catpanel_tr">
+                <div class="lang-panel-header">🇹🇷 Türkçe</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_tr" placeholder="Kategori adı...">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_en">
+                <div class="lang-panel-header">🇬🇧 İngilizce</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_en" placeholder="">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_ru">
+                <div class="lang-panel-header">🇷🇺 Rusça</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_ru" placeholder="">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_de">
+                <div class="lang-panel-header">🇩🇪 Almanca</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_de" placeholder="">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_pl">
+                <div class="lang-panel-header">🇵🇱 Lehçe</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_pl" placeholder="">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_fr">
+                <div class="lang-panel-header">🇫🇷 Fransızca</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_fr" placeholder="">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_nl">
+                <div class="lang-panel-header">🇳🇱 Hollandaca</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_nl" placeholder="">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_cs">
+                <div class="lang-panel-header">🇨🇿 Çekçe</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_cs" placeholder="">
+                </div>
+            </div>
+            <div class="lang-panel " id="catpanel_ro">
+                <div class="lang-panel-header">🇷🇴 Romence</div>
+                <div class="form-group">
+                    <label>Kategori Adı</label>
+                    <input type="text" id="catName_ro" placeholder="">
+                </div>
+            </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeCatModal()">İptal</button>
+            <button class="btn btn-primary" onclick="saveCat()">Kaydet</button>
+        </div>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Firebase -->
@@ -716,9 +797,9 @@
             const count = foods.filter(f => f.cat === cat.id).length;
             return `<div class="cat-item ${activeCat === cat.id ? 'active' : ''}"
                          onclick="selectCat('${cat.id}')">
-                <span class="cat-item-name">${cat.name}</span>
+                <span class="cat-item-name">${(cat.names && cat.names.tr) || cat.name}</span>
                 <span class="cat-item-count">${count}</span>
-                <button class="cat-delete-btn" onclick="deleteCategory(event,'${cat.id}','${cat.name}')">×</button>
+                <button class="cat-delete-btn" onclick="deleteCategory(event,'${cat.id}','${(cat.names&&cat.names.tr)||cat.name}')">×</button>
             </div>`;
         }).join('');
     }
@@ -729,17 +810,67 @@
         renderFoods();
     };
 
-    window.addCategory = async function() {
-        const input = document.getElementById('newCatInput');
-        const name  = input.value.trim();
-        if (!name) return;
-        await addDoc(collection(db, "menuCategories"), {
-            name,
-            order: categories.length,
-            createdAt: serverTimestamp()
-        });
-        input.value = '';
-        showToast('Kategori eklendi ✅', 'green');
+    window.openCatModal = function(id) {
+        if (id) {
+            const cat = categories.find(c => c.id === id);
+            if (!cat) return;
+            document.getElementById('catModalTitle').textContent = 'Kategoriyi Düzenle';
+            document.getElementById('editCatId').value = id;
+                    document.getElementById('catName_tr').value = (cat.names && cat.names.tr) || ('tr' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_en').value = (cat.names && cat.names.en) || ('en' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_ru').value = (cat.names && cat.names.ru) || ('ru' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_de').value = (cat.names && cat.names.de) || ('de' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_pl').value = (cat.names && cat.names.pl) || ('pl' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_fr').value = (cat.names && cat.names.fr) || ('fr' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_nl').value = (cat.names && cat.names.nl) || ('nl' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_cs').value = (cat.names && cat.names.cs) || ('cs' === 'tr' ? cat.name || '' : '');
+        document.getElementById('catName_ro').value = (cat.names && cat.names.ro) || ('ro' === 'tr' ? cat.name || '' : '');
+        } else {
+            document.getElementById('catModalTitle').textContent = 'Kategori Ekle';
+            document.getElementById('editCatId').value = '';
+                    document.getElementById('catName_tr').value = '';
+        document.getElementById('catName_en').value = '';
+        document.getElementById('catName_ru').value = '';
+        document.getElementById('catName_de').value = '';
+        document.getElementById('catName_pl').value = '';
+        document.getElementById('catName_fr').value = '';
+        document.getElementById('catName_nl').value = '';
+        document.getElementById('catName_cs').value = '';
+        document.getElementById('catName_ro').value = '';
+        }
+        switchLangTab('cat', 'tr');
+        document.getElementById('catModal').classList.add('show');
+    };
+
+    window.closeCatModal = function() {
+        document.getElementById('catModal').classList.remove('show');
+    };
+
+    window.saveCat = async function() {
+                const cn_tr = document.getElementById('catName_tr').value.trim();
+        const cn_en = document.getElementById('catName_en').value.trim();
+        const cn_ru = document.getElementById('catName_ru').value.trim();
+        const cn_de = document.getElementById('catName_de').value.trim();
+        const cn_pl = document.getElementById('catName_pl').value.trim();
+        const cn_fr = document.getElementById('catName_fr').value.trim();
+        const cn_nl = document.getElementById('catName_nl').value.trim();
+        const cn_cs = document.getElementById('catName_cs').value.trim();
+        const cn_ro = document.getElementById('catName_ro').value.trim();
+        if (!cn_tr) { showToast('Türkçe kategori adı boş olamaz ⚠️'); return; }
+        const names = {tr: cn_tr, en: cn_en, ru: cn_ru, de: cn_de, pl: cn_pl, fr: cn_fr, nl: cn_nl, cs: cn_cs, ro: cn_ro};
+        const id = document.getElementById('editCatId').value;
+        if (id) {
+            await updateDoc(doc(db, "menuCategories", id), { names, name: cn_tr });
+            showToast('Kategori güncellendi ✅', 'green');
+        } else {
+            await addDoc(collection(db, "menuCategories"), {
+                names, name: cn_tr,
+                order: categories.length,
+                createdAt: serverTimestamp()
+            });
+            showToast('Kategori eklendi ✅', 'green');
+        }
+        closeCatModal();
     };
 
     window.deleteCategory = async function(e, id, name) {
@@ -773,7 +904,7 @@
         }
 
         const cat = categories.find(c => c.id === activeCat);
-        title.textContent = cat ? cat.name : '';
+        title.textContent = cat ? ((cat.names && cat.names.tr) || cat.name) : '';
         btn.style.display = 'inline-block';
 
         const items = foods.filter(f => f.cat === activeCat);
@@ -839,7 +970,7 @@
         document.getElementById('foodDesc_cs').value = '';
         document.getElementById('foodName_ro').value = '';
         document.getElementById('foodDesc_ro').value = '';
-        switchLangTab('tr');
+        switchLangTab('food', 'tr');
         populateCatSelect();
         document.getElementById('foodModal').classList.add('show');
     };
@@ -867,18 +998,27 @@
         document.getElementById('foodDesc_cs').value = food.descs?.cs || ('cs' === 'tr' ? food.desc || '' : '');
         document.getElementById('foodName_ro').value = food.names?.ro || ('ro' === 'tr' ? food.name || '' : '');
         document.getElementById('foodDesc_ro').value = food.descs?.ro || ('ro' === 'tr' ? food.desc || '' : '');
-        switchLangTab('tr');
+        switchLangTab('food', 'tr');
         populateCatSelect();
         document.getElementById('foodCat').value = food.cat;
         document.getElementById('foodModal').classList.add('show');
     };
 
 
-    window.switchLangTab = function(code) {
-        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
-        document.querySelector(`.lang-tab[onclick="switchLangTab('${code}')"]`).classList.add('active');
-        document.getElementById('panel_' + code).classList.add('active');
+    window.switchLangTab = function(context, code) {
+        const modal = context === 'cat'
+            ? document.getElementById('catModal')
+            : document.getElementById('foodModal');
+        modal.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+        modal.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
+        const prefix = context === 'cat' ? 'catpanel_' : 'panel_';
+        const tabFn  = context === 'cat' ? `switchLangTab('cat','${code}')` : `switchLangTab('food','${code}')`;
+        // find tab by partial onclick match
+        modal.querySelectorAll('.lang-tab').forEach(t => {
+            if (t.getAttribute('onclick').includes(`'${code}'`)) t.classList.add('active');
+        });
+        const panel = document.getElementById(prefix + code);
+        if (panel) panel.classList.add('active');
     };
 
     window.closeModal = function() {
@@ -940,6 +1080,9 @@
     // Modal dışına tıklayınca kapat
     document.getElementById('foodModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
+    });
+    document.getElementById('catModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCatModal();
     });
 </script>
 </body>
