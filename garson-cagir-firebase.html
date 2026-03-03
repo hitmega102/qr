@@ -527,7 +527,7 @@
 
         function updateLanguage(lang) {
             currentLang = lang;
-            if (typeof renderMenuList === 'function') renderMenuList();
+            if (typeof allFoods !== 'undefined' && typeof renderMenuList === 'function') renderMenuList();
             const t = translations[lang];
             
             document.getElementById('currentFlag').textContent = t.flag;
