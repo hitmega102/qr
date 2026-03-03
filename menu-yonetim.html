@@ -526,7 +526,7 @@
         <input type="hidden" id="editFoodId">
 
         <div class="lang-tabs" id="langTabs">
-            <button class="lang-tab active" onclick="switchLangTab('food','tr')">🇹🇷 Türkçe</button><button class="lang-tab " onclick="switchLangTab('en')">🇬🇧 İngilizce</button><button class="lang-tab " onclick="switchLangTab('ru')">🇷🇺 Rusça</button><button class="lang-tab " onclick="switchLangTab('de')">🇩🇪 Almanca</button><button class="lang-tab " onclick="switchLangTab('pl')">🇵🇱 Lehçe</button><button class="lang-tab " onclick="switchLangTab('fr')">🇫🇷 Fransızca</button><button class="lang-tab " onclick="switchLangTab('nl')">🇳🇱 Hollandaca</button><button class="lang-tab " onclick="switchLangTab('cs')">🇨🇿 Çekçe</button><button class="lang-tab " onclick="switchLangTab('ro')">🇷🇴 Romence</button>
+            <button class="lang-tab active" onclick="switchLangTab('food','tr')">🇹🇷 Türkçe</button><button class="lang-tab " onclick="switchLangTab('food','en')">🇬🇧 İngilizce</button><button class="lang-tab " onclick="switchLangTab('food','ru')">🇷🇺 Rusça</button><button class="lang-tab " onclick="switchLangTab('food','de')">🇩🇪 Almanca</button><button class="lang-tab " onclick="switchLangTab('food','pl')">🇵🇱 Lehçe</button><button class="lang-tab " onclick="switchLangTab('food','fr')">🇫🇷 Fransızca</button><button class="lang-tab " onclick="switchLangTab('food','nl')">🇳🇱 Hollandaca</button><button class="lang-tab " onclick="switchLangTab('food','cs')">🇨🇿 Çekçe</button><button class="lang-tab " onclick="switchLangTab('food','ro')">🇷🇴 Romence</button>
         </div>
 
         
@@ -1006,16 +1006,19 @@
 
 
     window.switchLangTab = function(context, code) {
-        const modal = context === 'cat'
-            ? document.getElementById('catModal')
-            : document.getElementById('foodModal');
+        const prefix   = context === 'cat' ? 'catpanel_' : 'panel_';
+        const modalId  = context === 'cat' ? 'catModal'  : 'foodModal';
+        const modal    = document.getElementById(modalId);
+
+        // Tüm tab ve panelleri kapat
         modal.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
         modal.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
-        const prefix = context === 'cat' ? 'catpanel_' : 'panel_';
-        const tabFn  = context === 'cat' ? `switchLangTab('cat','${code}')` : `switchLangTab('food','${code}')`;
-        // find tab by partial onclick match
+
+        // Doğru tab ve paneli aç
         modal.querySelectorAll('.lang-tab').forEach(t => {
-            if (t.getAttribute('onclick').includes(`'${code}'`)) t.classList.add('active');
+            if (t.getAttribute('onclick') === "switchLangTab('" + context + "','" + code + "')") {
+                t.classList.add('active');
+            }
         });
         const panel = document.getElementById(prefix + code);
         if (panel) panel.classList.add('active');
