@@ -529,7 +529,7 @@
 
         function updateLanguage(lang) {
             currentLang = lang;
-            if (menuReady) renderMenuList();
+            if (menuReady) { renderMenuTabs(); renderMenuList(); }
             const t = translations[lang];
             
             document.getElementById('currentFlag').textContent = t.flag;
@@ -652,10 +652,11 @@
             tabs.innerHTML =
                 `<button class="menu-tab ${currentMenuCat === '__all__' ? 'active' : ''}"
                      onclick="setMenuCat('__all__', this)">Tümü</button>` +
-                allCategories.map(c =>
-                    `<button class="menu-tab ${currentMenuCat === c.id ? 'active' : ''}"
-                         onclick="setMenuCat('${c.id}', this)">${c.name}</button>`
-                ).join('');
+                allCategories.map(c => {
+                    const cname = (c.names && c.names[currentLang]) || c.name || '';
+                    return `<button class="menu-tab ${currentMenuCat === c.id ? 'active' : ''}"
+                         onclick="setMenuCat('${c.id}', this)">${cname}</button>`;
+                }).join('');
         }
 
         function renderMenuList() {
@@ -671,7 +672,8 @@
                 list.innerHTML = allCategories.map(cat => {
                     const items = activeFoods.filter(f => f.cat === cat.id);
                     if (items.length === 0) return '';
-                    return `<div class="menu-cat-header">${cat.name}</div>` +
+                    const cname = (cat.names && cat.names[lang]) || cat.name || '';
+                    return `<div class="menu-cat-header">${cname}</div>` +
                         items.map(itemHTML).join('');
                 }).join('');
             } else {
