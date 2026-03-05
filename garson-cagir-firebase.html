@@ -370,7 +370,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Çeviri veritabanı
         const translations = {
@@ -671,27 +671,72 @@
 
         // ── MENÜ (Firebase'den) ────────────────────────────────
         import { collection as col2, onSnapshot as onSnap2,
-                 query as q2, orderBy as ob2 }
+                 query as q2, orderBy as ob2,
+                 doc as doc2, getDoc as getDoc2 }
             from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let allCategories = [];
-        let allFoods      = [];
+        let allCategories  = [];
+        let allFoods       = [];
         let currentMenuCat = '__all__';
 
-        // Kategorileri dinle
-        onSnap2(q2(col2(db, "menuCategories"), ob2("order")), snap => {
-            allCategories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderMenuTabs();
-            renderMenuList();
-        });
+        const CACHE_KEY_CATS  = 'menuCache_categories';
+        const CACHE_KEY_FOODS = 'menuCache_foods';
+        const CACHE_KEY_VER   = 'menuCache_version';
 
-        // Yemekleri dinle
-        onSnap2(col2(db, "menuItems"), snap => {
-            allFoods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            menuReady = true;
-            renderMenuTabs();
-            renderMenuList();
-        });
+        // Cache'den yükle → anında göster, sonra versiyon kontrol et
+        (function loadFromCache() {
+            try {
+                const cats  = localStorage.getItem(CACHE_KEY_CATS);
+                const foods = localStorage.getItem(CACHE_KEY_FOODS);
+                if (cats && foods) {
+                    allCategories = JSON.parse(cats);
+                    allFoods      = JSON.parse(foods);
+                    menuReady     = true;
+                    renderMenuTabs();
+                    renderMenuList();
+                }
+            } catch(e) {}
+        })();
+
+        // Firebase'deki versiyon numarasını kontrol et
+        // Eğer cache'dekinden farklıysa güncelle, aynıysa Firebase'e istek atma
+        async function checkMenuVersion() {
+            try {
+                const verDoc = await getDoc2(doc2(db, "menuMeta", "version"));
+                const remoteVer = verDoc.exists() ? (verDoc.data().v || 0) : 0;
+                const localVer  = parseInt(localStorage.getItem(CACHE_KEY_VER) || '-1');
+
+                if (remoteVer !== localVer) {
+                    // Versiyon farklı — gerçek veriyi çek ve dinlemeye başla
+                    startMenuListeners(remoteVer);
+                }
+                // Versiyon aynı — cache geçerli, Firebase'e istek atma
+            } catch(e) {
+                // Bağlantı sorunu varsa cache'den devam et
+            }
+        }
+
+        function startMenuListeners(newVer) {
+            // Kategorileri dinle
+            onSnap2(q2(col2(db, "menuCategories"), ob2("order")), snap => {
+                allCategories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                localStorage.setItem(CACHE_KEY_CATS, JSON.stringify(allCategories));
+                renderMenuTabs();
+                renderMenuList();
+            });
+
+            // Yemekleri dinle
+            onSnap2(col2(db, "menuItems"), snap => {
+                allFoods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                menuReady = true;
+                localStorage.setItem(CACHE_KEY_FOODS, JSON.stringify(allFoods));
+                localStorage.setItem(CACHE_KEY_VER, String(newVer));
+                renderMenuTabs();
+                renderMenuList();
+            });
+        }
+
+        checkMenuVersion();
 
         function renderMenuTabs() {
             const tabs = document.getElementById('menuTabs');
