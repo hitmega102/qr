@@ -703,7 +703,7 @@
                 `<button class="menu-tab ${currentMenuCat === '__all__' ? 'active' : ''}"
                      onclick="setMenuCat('__all__', this)">Tümü</button>` +
                 allCategories.map(c => {
-                    const cname = (c.names && c.names[currentLang]) || c.name || '';
+                    const cname = (c.names && (c.names[currentLang] || c.names['en'] || c.names['tr'])) || c.name || '';
                     return `<button class="menu-tab ${currentMenuCat === c.id ? 'active' : ''}"
                          onclick="setMenuCat('${c.id}', this)">${cname}</button>`;
                 }).join('');
