@@ -751,7 +751,7 @@
     import { getFirestore, collection, doc,
              addDoc, updateDoc, deleteDoc,
              onSnapshot, query, orderBy,
-             serverTimestamp }          from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+             serverTimestamp, setDoc }   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const PANEL_PASSWORD = "1234"; // ← Şifreyi buradan değiştirin
 
@@ -766,6 +766,15 @@
 
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
+
+
+    // Menü değişince versiyon numarasını artır → misafir sayfaları cache'i yeniler
+    async function bumpMenuVersion() {
+        try {
+            const v = Date.now();
+            await setDoc(doc(db, "menuMeta", "version"), { v });
+        } catch(e) {}
+    }
 
     // ── Şifre ──────────────────────────────────────────────
     window.checkPassword = function() {
@@ -885,6 +894,7 @@
         if (id) {
             await updateDoc(doc(db, "menuCategories", id), { names, name: cn_tr });
             showToast('Kategori güncellendi ✅', 'green');
+            await bumpMenuVersion();
         } else {
             await addDoc(collection(db, "menuCategories"), {
                 names, name: cn_tr,
@@ -892,6 +902,7 @@
                 createdAt: serverTimestamp()
             });
             showToast('Kategori eklendi ✅', 'green');
+            await bumpMenuVersion();
         }
         closeCatModal();
     };
@@ -911,6 +922,7 @@
         await deleteDoc(doc(db, "menuCategories", id));
         if (activeCat === id) activeCat = null;
         showToast('Kategori silindi', 'red');
+        await bumpMenuVersion();
     };
 
     // ── Yemekler ────────────────────────────────────────────
@@ -1009,12 +1021,14 @@
     window.toggleFood = async function(id, currentlyActive) {
         await updateDoc(doc(db, "menuItems", id), { active: !currentlyActive });
         showToast(currentlyActive ? 'Yemek gizlendi' : 'Yemek aktif edildi ✅', currentlyActive ? '' : 'green');
+        await bumpMenuVersion();
     };
 
     window.deleteFoodItem = async function(id, name) {
         if (!confirm(`"${name}" yemeğini silmek istediğinize emin misiniz?`)) return;
         await deleteDoc(doc(db, "menuItems", id));
         showToast('Yemek silindi', 'red');
+        await bumpMenuVersion();
     };
 
     // ── Modal ────────────────────────────────────────────────
@@ -1134,6 +1148,7 @@
             await updateDoc(doc(db, "menuItems", id), { names, descs, cat,
                 name: name_tr, desc: desc_tr });
             showToast('Yemek güncellendi ✅', 'green');
+            await bumpMenuVersion();
         } else {
             await addDoc(collection(db, "menuItems"), {
                 names, descs, cat,
@@ -1143,6 +1158,7 @@
                 createdAt: serverTimestamp()
             });
             showToast('Yemek eklendi ✅', 'green');
+            await bumpMenuVersion();
         }
         closeModal();
     };
