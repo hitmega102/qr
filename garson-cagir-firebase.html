@@ -337,8 +337,8 @@
             </div>
 
             <div class="button-group">
-                <button class="btn btn-primary" onclick="garsonCagir()">
-                    <span class="emoji">👨‍🍳</span>
+                <button class="btn btn-primary" id="waiterCallBtn" onclick="garsonCagir()">
+                    <span class="emoji" id="btnEmoji">👨‍🍳</span>
                     <span id="btnWaiter">Garson Çağır</span>
                 </button>
             </div>
@@ -608,7 +608,56 @@
             }
         }
 
+        const COOLDOWN_SEC = 120; // 2 dakika
+        let cooldownInterval = null;
+
+        // Sayfa yüklenince daha önce basılmışsa cooldown'ı geri yükle
+        (function restoreCooldown() {
+            const key   = 'waiterCooldown_' + (new URLSearchParams(window.location.search).get('masa') || '0');
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                const remaining = Math.ceil((parseInt(saved) - Date.now()) / 1000);
+                if (remaining > 0) startCooldownUI(remaining, key);
+            }
+        })();
+
+        function startCooldownUI(seconds, storageKey) {
+            const btn   = document.getElementById('waiterCallBtn');
+            const label = document.getElementById('btnWaiter');
+            const emoji = document.getElementById('btnEmoji');
+            btn.disabled = true;
+            btn.style.opacity = '0.65';
+            btn.style.cursor  = 'not-allowed';
+
+            let remaining = seconds;
+            label.textContent = remaining + 's sonra tekrar çağırabilirsiniz';
+            emoji.textContent = '⏳';
+
+            cooldownInterval = setInterval(() => {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(cooldownInterval);
+                    btn.disabled      = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor  = 'pointer';
+                    emoji.textContent = '👨‍🍳';
+                    // dil güncellenmiş olabilir, tekrar uygula
+                    const t = translations[currentLang];
+                    label.textContent = t ? t.btnWaiter : 'Garson Çağır';
+                    if (storageKey) localStorage.removeItem(storageKey);
+                } else {
+                    label.textContent = remaining + 's sonra tekrar çağırabilirsiniz';
+                }
+            }, 1000);
+        }
+
         window.garsonCagir = async function() {
+            const btn = document.getElementById('waiterCallBtn');
+            if (btn.disabled) return;
+
+            const key = 'waiterCooldown_' + masaNumarasi;
+            localStorage.setItem(key, Date.now() + COOLDOWN_SEC * 1000);
+
             const t = translations[currentLang];
             await addRequest('Waiter', '👨‍🍳');
             showNotification(
@@ -617,6 +666,7 @@
                 'success'
             );
             showStatus(t.waiterStatus);
+            startCooldownUI(COOLDOWN_SEC, key);
         }
 
         // ── MENÜ (Firebase'den) ────────────────────────────────
