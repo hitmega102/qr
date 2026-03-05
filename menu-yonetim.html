@@ -936,8 +936,11 @@
             return;
         }
 
-        container.innerHTML = `<div class="food-list">` + items.map(item => `
-            <div class="food-item ${item.active === false ? 'inactive' : ''}">
+        items.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+
+        container.innerHTML = `<div class="food-list" id="sortableList">` + items.map(item => `
+            <div class="food-item ${item.active === false ? 'inactive' : ''}" data-id="${item.id}" draggable="true">
+                <div class="drag-handle" title="Sürükleyerek sırala">⠿</div>
                 <div class="food-item-info">
                     <div class="food-item-name">${item.name}</div>
                     <div class="food-item-desc">${item.desc || '—'}</div>
@@ -948,9 +951,11 @@
                         ${item.active !== false ? '✓ Aktif' : '✗ Gizli'}
                     </button>
                     <button class="btn btn-warning btn-sm" onclick="openEditFood('${item.id}')">Düzenle</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${item.id}', '${item.name.replace(/'/g,"\\'")}')">Sil</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${item.id}', '${item.name.replace(/'/g,"\'")}')">Sil</button>
                 </div>
             </div>`).join('') + `</div>`;
+
+        initDragSort();
     }
 
     function initDragSort() {
