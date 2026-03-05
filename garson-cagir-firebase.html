@@ -723,7 +723,7 @@
                 list.innerHTML = allCategories.map(cat => {
                     const items = activeFoods.filter(f => f.cat === cat.id);
                     if (items.length === 0) return '';
-                    const cname = (cat.names && cat.names[lang]) || cat.name || '';
+                    const cname = (cat.names && (cat.names[lang] || cat.names['en'] || cat.names['tr'])) || cat.name || '';
                     return `<div class="menu-cat-header">${cname}</div>` +
                         items.map(itemHTML).join('');
                 }).join('');
@@ -737,8 +737,8 @@
 
         function itemHTML(item) {
             const lang = currentLang || 'tr';
-            const name = (item.names && item.names[lang]) || item.name || '';
-            const desc = (item.descs && item.descs[lang]) || item.desc || '';
+            const name = (item.names && (item.names[lang] || item.names['en'] || item.names['tr'])) || item.name || '';
+            const desc = (item.descs && (item.descs[lang] || item.descs['en'] || item.descs['tr'])) || item.desc || '';
             return `<div class="menu-item">
                 <div class="menu-dot"></div>
                 <div>
