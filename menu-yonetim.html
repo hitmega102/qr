@@ -251,6 +251,28 @@
 
         .food-list { display: flex; flex-direction: column; gap: 8px; }
 
+        .drag-handle {
+            color: #ccc;
+            font-size: 18px;
+            cursor: grab;
+            padding: 0 4px;
+            flex-shrink: 0;
+            user-select: none;
+            line-height: 1;
+        }
+        .drag-handle:active { cursor: grabbing; }
+
+        .food-item.dragging {
+            opacity: 0.4;
+            border: 2px dashed #667eea;
+            background: #f0f0ff;
+        }
+        .food-item.drag-over {
+            border-color: #667eea;
+            background: #f5f3ff;
+            transform: scale(1.01);
+        }
+
         .food-item {
             display: flex;
             align-items: center;
@@ -929,6 +951,54 @@
                     <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${item.id}', '${item.name.replace(/'/g,"\\'")}')">Sil</button>
                 </div>
             </div>`).join('') + `</div>`;
+    }
+
+    function initDragSort() {
+        const list = document.getElementById('sortableList');
+        if (!list) return;
+        let dragSrc = null;
+
+        list.querySelectorAll('.food-item').forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                dragSrc = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            item.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                list.querySelectorAll('.food-item').forEach(i => i.classList.remove('drag-over'));
+            });
+            item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (this !== dragSrc) {
+                    list.querySelectorAll('.food-item').forEach(i => i.classList.remove('drag-over'));
+                    this.classList.add('drag-over');
+                }
+            });
+            item.addEventListener('drop', async function(e) {
+                e.preventDefault();
+                if (this === dragSrc) return;
+                this.classList.remove('drag-over');
+
+                // DOM sırasını güncelle
+                const items = [...list.querySelectorAll('.food-item')];
+                const srcIdx  = items.indexOf(dragSrc);
+                const destIdx = items.indexOf(this);
+                if (srcIdx < destIdx) {
+                    list.insertBefore(dragSrc, this.nextSibling);
+                } else {
+                    list.insertBefore(dragSrc, this);
+                }
+
+                // Firebase'e yeni order'ları yaz
+                const newOrder = [...list.querySelectorAll('.food-item')].map(el => el.dataset.id);
+                await Promise.all(newOrder.map((id, idx) =>
+                    updateDoc(doc(db, "menuItems", id), { order: idx })
+                ));
+                showToast('Sıralama kaydedildi ✅', 'green');
+            });
+        });
     }
 
     window.toggleFood = async function(id, currentlyActive) {
