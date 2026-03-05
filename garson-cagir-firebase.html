@@ -356,7 +356,7 @@
                 </div>
                 <div class="menu-list" id="menuList"></div>
                 <div class="menu-allergen-note">
-                    ℹ️ Alerjeniniz varsa lütfen garsonumuzu bilgilendirin.
+                    ℹ️ <span id="allergenNote">Alerjeniniz varsa lütfen garsonumuzu bilgilendirin.</span>
                 </div>
             </div>
         </div>
@@ -385,7 +385,8 @@
                 waiterNotifTitle: '✅ Garson Çağrıldı!',
                 waiterNotifText: 'Masa {table} - Garsonumuz yolda!',
                 errorTitle: '⚠️ Hata',
-                errorText: 'Bağlantı sorunu. Lütfen tekrar deneyin.'
+                errorText: 'Bağlantı sorunu. Lütfen tekrar deneyin.',
+                allergenNote: 'Alerjeniniz varsa lütfen garsonumuzu bilgilendirin.'
             },
             en: {
                 flag: '🇬🇧',
@@ -398,7 +399,8 @@
                 waiterNotifTitle: '✅ Waiter Called!',
                 waiterNotifText: 'Table {table} - Waiter on the way!',
                 errorTitle: '⚠️ Error',
-                errorText: 'Connection problem. Please try again.'
+                errorText: 'Connection problem. Please try again.',
+                allergenNote: 'Please inform our staff if you have any allergies.'
             },
             ru: {
                 flag: '🇷🇺',
@@ -411,7 +413,8 @@
                 waiterNotifTitle: '✅ Официант вызван!',
                 waiterNotifText: 'Стол {table} - Официант уже идёт!',
                 errorTitle: '⚠️ Ошибка',
-                errorText: 'Проблема с подключением. Пожалуйста, попробуйте снова.'
+                errorText: 'Проблема с подключением. Пожалуйста, попробуйте снова.',
+                allergenNote: 'Сообщите нашему персоналу, если у вас есть аллергия.'
             },
             de: {
                 flag: '🇩🇪',
@@ -424,7 +427,8 @@
                 waiterNotifTitle: '✅ Kellner gerufen!',
                 waiterNotifText: 'Tisch {table} - Kellner ist unterwegs!',
                 errorTitle: '⚠️ Fehler',
-                errorText: 'Verbindungsproblem. Bitte versuchen Sie es erneut.'
+                errorText: 'Verbindungsproblem. Bitte versuchen Sie es erneut.',
+                allergenNote: 'Bitte informieren Sie unser Personal, wenn Sie Allergien haben.'
             },
             pl: {
                 flag: '🇵🇱',
@@ -437,7 +441,8 @@
                 waiterNotifTitle: '✅ Kelner wezwany!',
                 waiterNotifText: 'Stolik {table} - Kelner już idzie!',
                 errorTitle: '⚠️ Błąd',
-                errorText: 'Problem z połączeniem. Spróbuj ponownie.'
+                errorText: 'Problem z połączeniem. Spróbuj ponownie.',
+                allergenNote: 'Poinformuj nasz personel, jeśli masz alergie.'
             },
             fr: {
                 flag: '🇫🇷',
@@ -450,7 +455,8 @@
                 waiterNotifTitle: '✅ Serveur appelé!',
                 waiterNotifText: 'Table {table} - Le serveur arrive!',
                 errorTitle: '⚠️ Erreur',
-                errorText: 'Problème de connexion. Veuillez réessayer.'
+                errorText: 'Problème de connexion. Veuillez réessayer.',
+                allergenNote: 'Veuillez informer notre personnel si vous avez des allergies.'
             },
             nl: {
                 flag: '🇳🇱',
@@ -463,7 +469,8 @@
                 waiterNotifTitle: '✅ Ober geroepen!',
                 waiterNotifText: 'Tafel {table} - Ober is onderweg!',
                 errorTitle: '⚠️ Fout',
-                errorText: 'Verbindingsprobleem. Probeer het opnieuw.'
+                errorText: 'Verbindingsprobleem. Probeer het opnieuw.',
+                allergenNote: 'Informeer ons personeel als u allergieën heeft.'
             },
             cs: {
                 flag: '🇨🇿',
@@ -476,7 +483,8 @@
                 waiterNotifTitle: '✅ Číšník zavolán!',
                 waiterNotifText: 'Stůl {table} - Číšník je na cestě!',
                 errorTitle: '⚠️ Chyba',
-                errorText: 'Problém s připojením. Zkuste to prosím znovu.'
+                errorText: 'Problém s připojením. Zkuste to prosím znovu.',
+                allergenNote: 'Informujte prosím náš personál, pokud máte alergie.'
             },
             ro: {
                 flag: '🇷🇴',
@@ -489,7 +497,8 @@
                 waiterNotifTitle: '✅ Ospătar chemat!',
                 waiterNotifText: 'Masa {table} - Ospătarul vine!',
                 errorTitle: '⚠️ Eroare',
-                errorText: 'Problemă de conexiune. Vă rugăm să încercați din nou.'
+                errorText: 'Problemă de conexiune. Vă rugăm să încercați din nou.',
+                allergenNote: 'Vă rugăm să informați personalul nostru dacă aveți alergii.'
             }
         };
 
@@ -530,6 +539,8 @@
         function updateLanguage(lang) {
             currentLang = lang;
             if (menuReady) { renderMenuTabs(); renderMenuList(); }
+            const an = document.getElementById('allergenNote');
+            if (an && translations[lang]) an.textContent = translations[lang].allergenNote || translations['en'].allergenNote || '';
             const t = translations[lang];
             
             document.getElementById('currentFlag').textContent = t.flag;
