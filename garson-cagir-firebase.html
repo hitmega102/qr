@@ -387,7 +387,8 @@
                 errorTitle: '⚠️ Hata',
                 errorText: 'Bağlantı sorunu. Lütfen tekrar deneyin.',
                 allergenNote: 'Alerjeniniz varsa lütfen garsonumuzu bilgilendirin.',
-                menuTitle: 'İÇECEK MENÜSÜ'
+                menuTitle: 'İÇECEK MENÜSÜ',
+                cooldown: 's sonra tekrar çağırabilirsiniz'
             },
             en: {
                 flag: '🇬🇧',
@@ -402,7 +403,8 @@
                 errorTitle: '⚠️ Error',
                 errorText: 'Connection problem. Please try again.',
                 allergenNote: 'Please inform our staff if you have any allergies.',
-                menuTitle: 'DRINKS MENU'
+                menuTitle: 'DRINKS MENU',
+                cooldown: 's later you can call again'
             },
             ru: {
                 flag: '🇷🇺',
@@ -417,7 +419,8 @@
                 errorTitle: '⚠️ Ошибка',
                 errorText: 'Проблема с подключением. Пожалуйста, попробуйте снова.',
                 allergenNote: 'Сообщите нашему персоналу, если у вас есть аллергия.',
-                menuTitle: 'МЕНЮ НАПИТКОВ'
+                menuTitle: 'МЕНЮ НАПИТКОВ',
+                cooldown: 'с — повторный вызов доступен через'
             },
             de: {
                 flag: '🇩🇪',
@@ -432,7 +435,8 @@
                 errorTitle: '⚠️ Fehler',
                 errorText: 'Verbindungsproblem. Bitte versuchen Sie es erneut.',
                 allergenNote: 'Bitte informieren Sie unser Personal, wenn Sie Allergien haben.',
-                menuTitle: 'GETRÄNKEKARTE'
+                menuTitle: 'GETRÄNKEKARTE',
+                cooldown: 's — erneuter Ruf möglich'
             },
             pl: {
                 flag: '🇵🇱',
@@ -447,7 +451,8 @@
                 errorTitle: '⚠️ Błąd',
                 errorText: 'Problem z połączeniem. Spróbuj ponownie.',
                 allergenNote: 'Poinformuj nasz personel, jeśli masz alergie.',
-                menuTitle: 'MENU NAPOJÓW'
+                menuTitle: 'MENU NAPOJÓW',
+                cooldown: 's — możesz ponownie wezwać'
             },
             fr: {
                 flag: '🇫🇷',
@@ -462,7 +467,8 @@
                 errorTitle: '⚠️ Erreur',
                 errorText: 'Problème de connexion. Veuillez réessayer.',
                 allergenNote: 'Veuillez informer notre personnel si vous avez des allergies.',
-                menuTitle: 'CARTE DES BOISSONS'
+                menuTitle: 'CARTE DES BOISSONS',
+                cooldown: 's — nouvel appel possible'
             },
             nl: {
                 flag: '🇳🇱',
@@ -477,7 +483,8 @@
                 errorTitle: '⚠️ Fout',
                 errorText: 'Verbindingsprobleem. Probeer het opnieuw.',
                 allergenNote: 'Informeer ons personeel als u allergieën heeft.',
-                menuTitle: 'DRANKENMENU'
+                menuTitle: 'DRANKENMENU',
+                cooldown: 's — opnieuw oproepen mogelijk'
             },
             cs: {
                 flag: '🇨🇿',
@@ -492,7 +499,8 @@
                 errorTitle: '⚠️ Chyba',
                 errorText: 'Problém s připojením. Zkuste to prosím znovu.',
                 allergenNote: 'Informujte prosím náš personál, pokud máte alergie.',
-                menuTitle: 'NÁPOJOVÝ LÍSTEK'
+                menuTitle: 'NÁPOJOVÝ LÍSTEK',
+                cooldown: 's — lze znovu zavolat'
             },
             ro: {
                 flag: '🇷🇴',
@@ -507,7 +515,8 @@
                 errorTitle: '⚠️ Eroare',
                 errorText: 'Problemă de conexiune. Vă rugăm să încercați din nou.',
                 allergenNote: 'Vă rugăm să informați personalul nostru dacă aveți alergii.',
-                menuTitle: 'MENIU BĂUTURI'
+                menuTitle: 'MENIU BĂUTURI',
+                cooldown: 's — puteți apela din nou'
             }
         };
 
@@ -652,7 +661,8 @@
             btn.style.cursor  = 'not-allowed';
 
             let remaining = seconds;
-            label.textContent = remaining + 's sonra tekrar çağırabilirsiniz';
+            const tc = translations[currentLang] || translations['tr'];
+            label.textContent = remaining + (tc.cooldown || 's sonra tekrar çağırabilirsiniz');
             emoji.textContent = '⏳';
 
             cooldownInterval = setInterval(() => {
@@ -668,7 +678,8 @@
                     label.textContent = t ? t.btnWaiter : 'Garson Çağır';
                     if (storageKey) localStorage.removeItem(storageKey);
                 } else {
-                    label.textContent = remaining + 's sonra tekrar çağırabilirsiniz';
+                    const tc2 = translations[currentLang] || translations['tr'];
+                    label.textContent = remaining + (tc2.cooldown || 's sonra tekrar çağırabilirsiniz');
                 }
             }, 1000);
         }
