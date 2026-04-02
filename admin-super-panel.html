@@ -129,7 +129,7 @@ async function loadSuccessThreshold() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'success_threshold')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             successThreshold = parseInt(data.setting_value);
@@ -300,7 +300,7 @@ async function loadEmailTemplate() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'email_template')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             emailTemplate = data.setting_value;
@@ -519,7 +519,7 @@ async function loadSuccessThreshold() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'success_threshold')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             successThreshold = parseInt(data.setting_value);
@@ -690,7 +690,7 @@ async function loadEmailTemplate() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'email_template')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             emailTemplate = data.setting_value;
@@ -909,7 +909,7 @@ async function loadSuccessThreshold() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'success_threshold')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             successThreshold = parseInt(data.setting_value);
@@ -1080,7 +1080,7 @@ async function loadEmailTemplate() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'email_template')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             emailTemplate = data.setting_value;
@@ -2049,25 +2049,25 @@ window.sendReviewEmail = async function() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_service_id')
-            .single();
+            .maybeSingle();
         
         const { data: templateIdData } = await supabase
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_template_id')
-            .single();
+            .maybeSingle();
         
         const { data: publicKeyData } = await supabase
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_public_key')
-            .single();
+            .maybeSingle();
         
         const { data: fromNameData } = await supabase
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_from_name')
-            .single();
+            .maybeSingle();
         
         if (!serviceIdData || !templateIdData || !publicKeyData) {
             alert('⚠️ EmailJS ayarları yapılmamış!\n\nAyarlar sayfasından EmailJS bilgilerinizi girin.');
@@ -2213,25 +2213,25 @@ window.sendBulkReviewRequest = async function() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_service_id')
-            .single();
+            .maybeSingle();
         
         const { data: templateIdData } = await supabase
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_template_id')
-            .single();
+            .maybeSingle();
         
         const { data: publicKeyData } = await supabase
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_public_key')
-            .single();
+            .maybeSingle();
         
         const { data: fromNameData } = await supabase
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_from_name')
-            .single();
+            .maybeSingle();
         
         if (!serviceIdData || !templateIdData || !publicKeyData) {
             alert('⚠️ EmailJS ayarları yapılmamış!\n\nAyarlar sayfasından EmailJS bilgilerinizi girin.');
@@ -2579,7 +2579,7 @@ async function loadGroqKey(){
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'groq_api_key')
-            .single();
+            .maybeSingle();
         
         if (error) {
             console.log('API Key bulunamadı:', error.message);
@@ -2605,7 +2605,7 @@ async function initEmailJS() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'emailjs_public_key')
-            .single();
+            .maybeSingle();
         
         if (publicKeyData && publicKeyData.setting_value) {
             emailjs.init(publicKeyData.setting_value);
@@ -2635,7 +2635,7 @@ async function loadEmailJSSettings() {
                 .from('ai_settings')
                 .select('setting_value')
                 .eq('setting_key', dbKey)
-                .single();
+                .maybeSingle();
             
             console.log(`📊 ${dbKey} yanıtı:`, { data, error });
             
@@ -2898,7 +2898,7 @@ window.analyzeWithAI = async function(surveyId, btnElement) {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'groq_api_key')
-            .single();
+            .maybeSingle();
         
         if (error || !data || !data.setting_value) {
             return alert('❌ Groq API Key girilmemiş!\n\nAyarlar sayfasından API Key ekleyin.\n\nhttps://console.groq.com/keys');
@@ -3003,7 +3003,7 @@ SADECE bu JSON'u döndür (başka açıklama ekleme):
             .from('ai_analyses')
             .select('id')
             .eq('survey_id', survey.id)
-            .single();
+            .maybeSingle();
         
         let savedAnalysis;
         
@@ -3456,7 +3456,7 @@ async function loadSuccessThreshold() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'success_threshold')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             successThreshold = parseInt(data.setting_value);
@@ -3627,7 +3627,7 @@ async function loadEmailTemplate() {
             .from('ai_settings')
             .select('setting_value')
             .eq('setting_key', 'email_template')
-            .single();
+            .maybeSingle();
         
         if (data && data.setting_value) {
             emailTemplate = data.setting_value;
