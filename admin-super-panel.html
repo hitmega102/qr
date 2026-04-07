@@ -1354,6 +1354,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea}
 <div class="menu-item" data-page="emails" onclick="nav(this,'emails')"><span class="icon">📧</span><span>E-postalar</span></div>
 <div class="menu-item" data-page="reports" onclick="nav(this,'reports')"><span class="icon">📈</span><span>Raporlar</span></div>
 <div class="menu-item" data-page="feedback" onclick="nav(this,'feedback')"><span class="icon">💬</span><span>Geri Bildirim</span></div>
+<div class="menu-item" data-page="fb-reports" onclick="nav(this,'fb-reports')"><span class="icon">📊</span><span>Bildirim Raporu</span></div>
 <div class="menu-item" data-page="ai-analyses" onclick="nav(this,'ai-analyses')"><span class="icon">🤖</span><span>AI Analizler</span></div>
 <div class="menu-item" data-page="settings" onclick="nav(this,'settings')"><span class="icon">⚙️</span><span>Ayarlar</span></div>
 <div class="menu-item" data-page="users" onclick="nav(this,'users')"><span class="icon">👥</span><span>Kullanıcılar</span></div>
@@ -1690,6 +1691,59 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
 </div>
 </div>
 
+
+<div id="fb-reports" class="page">
+<div class="page-header"><h2>📊 Bildirim Raporu</h2><p>Geri bildirim istatistikleri ve trendler</p></div>
+
+<div class="controls" style="margin-bottom:24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <label style="font-size:12px;font-weight:600;color:#666">Başlangıç</label>
+    <input type="date" id="fbrStart" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <label style="font-size:12px;font-weight:600;color:#666">Bitiş</label>
+    <input type="date" id="fbrEnd" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <label style="font-size:12px;font-weight:600;color:#666">Trend Görünümü</label>
+    <select id="fbrTrend" onchange="renderFbReport()" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+      <option value="daily">Günlük</option>
+      <option value="weekly">Haftalık</option>
+      <option value="monthly">Aylık</option>
+    </select>
+  </div>
+  <button onclick="renderFbReport()" style="margin-top:18px;padding:10px 22px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🔍 Raporu Getir</button>
+</div>
+
+<!-- Özet kartlar -->
+<div class="stats-grid" style="margin-bottom:24px" id="fbrSummary"></div>
+
+<!-- Durum özeti -->
+<div class="chart-wrap" id="fbrStatusWrap" style="display:none">
+  <h3>📋 Durum Özeti</h3>
+  <div id="fbrStatusChart" style="padding:10px 0"></div>
+</div>
+
+<!-- Departman dağılımı -->
+<div class="chart-wrap" id="fbrDeptWrap" style="display:none">
+  <h3>🏢 Departman Bazlı Dağılım</h3>
+  <div id="fbrDeptChart" style="padding:10px 0"></div>
+</div>
+
+<!-- Çözüm süresi -->
+<div class="chart-wrap" id="fbrDurationWrap" style="display:none">
+  <h3>⏱ Ortalama Çözüm Süresi (Departmana Göre)</h3>
+  <div id="fbrDurationChart" style="padding:10px 0"></div>
+</div>
+
+<!-- Trend grafiği -->
+<div class="chart-wrap" id="fbrTrendWrap" style="display:none">
+  <h3>📈 Bildirim Trendi</h3>
+  <div class="bar-chart" id="fbrTrendChart" style="height:200px"></div>
+</div>
+
+</div>
+
 <div id="ai-analyses" class="page">
 <div class="page-header"><h2>🤖 AI Analizler</h2><p>Yapay zeka destekli yorum analizi</p></div>
 
@@ -1911,6 +1965,7 @@ window.nav=function(el,pageId){
     if(pageId==='emails')renderEmails();
     if(pageId==='ai-analyses')loadAIAnalyses();
     if(pageId==='feedback')loadFeedback();
+    if(pageId==='fb-reports')initFbReport();
     if(pageId==='settings'){renderQuestions();loadGroqKey();loadEmailJSSettings();loadSuccessThreshold();loadEmailTemplate();}
 }
 
@@ -3988,6 +4043,175 @@ window.deleteFeedback = async function(id) {
         if (error) throw error;
         await loadFeedback();
     } catch(e) { alert('❌ Silinemedi: ' + e.message); }
+}
+
+
+// ============================================
+// GERİ BİLDİRİM RAPORU
+// ============================================
+
+function initFbReport() {
+    const today = new Date();
+    const ago30 = new Date(today); ago30.setDate(ago30.getDate() - 30);
+    const startEl = document.getElementById('fbrStart');
+    const endEl = document.getElementById('fbrEnd');
+    if (startEl && !startEl.value) startEl.valueAsDate = ago30;
+    if (endEl && !endEl.value) endEl.valueAsDate = today;
+    renderFbReport();
+}
+
+function renderFbReport() {
+    const startVal = document.getElementById('fbrStart').value;
+    const endVal = document.getElementById('fbrEnd').value;
+    const trendMode = document.getElementById('fbrTrend').value;
+
+    const start = startVal ? new Date(startVal) : null;
+    const end = endVal ? new Date(endVal + 'T23:59:59') : null;
+
+    let data = allFeedback.filter(f => {
+        const d = new Date(f.created_at);
+        if (start && d < start) return false;
+        if (end && d > end) return false;
+        return true;
+    });
+
+    const total = data.length;
+    const complaints = data.filter(f => f.type === 'complaint');
+    const compliments = data.filter(f => f.type === 'compliment');
+    const resolved = data.filter(f => f.status === 'resolved');
+    const open = data.filter(f => f.status === 'open');
+    const inprogress = data.filter(f => f.status === 'inprogress');
+
+    // Ortalama çözüm süresi (dakika)
+    const resolvedWithTime = resolved.filter(f => f.resolved_at && f.created_at);
+    const avgMins = resolvedWithTime.length
+        ? Math.round(resolvedWithTime.reduce((s, f) => s + (new Date(f.resolved_at) - new Date(f.created_at)) / 60000, 0) / resolvedWithTime.length)
+        : null;
+    const avgDuration = avgMins === null ? '—' : avgMins < 60 ? avgMins + ' dk' : Math.floor(avgMins/60) + 's ' + (avgMins%60) + 'dk';
+
+    // Özet kartlar
+    document.getElementById('fbrSummary').innerHTML = `
+        <div class="stat-card"><div class="s-icon">📊</div><div class="s-label">Toplam Bildirim</div><div class="s-value">${total}</div></div>
+        <div class="stat-card danger"><div class="s-icon">🔴</div><div class="s-label">Şikayet</div><div class="s-value">${complaints.length}</div></div>
+        <div class="stat-card success"><div class="s-icon">⭐</div><div class="s-label">Olumlu</div><div class="s-value">${compliments.length}</div></div>
+        <div class="stat-card warning"><div class="s-icon">⏱</div><div class="s-label">Ort. Çözüm Süresi</div><div class="s-value" style="font-size:20px">${avgDuration}</div></div>
+    `;
+
+    if (total === 0) {
+        ['fbrStatusWrap','fbrDeptWrap','fbrDurationWrap','fbrTrendWrap'].forEach(id => {
+            const el = document.getElementById(id); if(el) el.style.display = 'none';
+        });
+        return;
+    }
+
+    // --- DURUM ÖZETİ yatay bar ---
+    document.getElementById('fbrStatusWrap').style.display = 'block';
+    const statusData = [
+        { label: '🔴 Açık', count: open.length, color: '#ef4444' },
+        { label: '🟡 İşlemde', count: inprogress.length, color: '#f59e0b' },
+        { label: '🟢 Çözüldü', count: resolved.length, color: '#10b981' },
+    ];
+    document.getElementById('fbrStatusChart').innerHTML = statusData.map(s => {
+        const pct = total > 0 ? ((s.count / total) * 100).toFixed(1) : 0;
+        return `<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+            <div style="min-width:110px;font-size:14px;font-weight:600">${s.label}</div>
+            <div style="flex:1;background:#f0f0f0;height:32px;border-radius:16px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:${s.color};display:flex;align-items:center;padding:0 14px;color:white;font-weight:700;font-size:13px;transition:width 0.6s ease;min-width:${s.count>0?'40px':'0'}">
+                    ${s.count > 0 ? s.count : ''}
+                </div>
+            </div>
+            <div style="min-width:70px;text-align:right;font-size:14px;font-weight:600;color:${s.color}">%${pct}</div>
+        </div>`;
+    }).join('');
+
+    // --- DEPARTMAN DAĞILIMI ---
+    document.getElementById('fbrDeptWrap').style.display = 'block';
+    const depts = {};
+    data.forEach(f => {
+        if (!depts[f.department]) depts[f.department] = { complaint: 0, compliment: 0 };
+        depts[f.department][f.type === 'complaint' ? 'complaint' : 'compliment']++;
+    });
+    const deptEntries = Object.entries(depts).sort((a,b) => (b[1].complaint+b[1].compliment) - (a[1].complaint+a[1].compliment));
+    const maxDept = Math.max(...deptEntries.map(([,v]) => v.complaint + v.compliment), 1);
+    document.getElementById('fbrDeptChart').innerHTML = deptEntries.map(([dept, counts]) => {
+        const tot = counts.complaint + counts.compliment;
+        const cpct = ((counts.complaint / maxDept) * 100).toFixed(1);
+        const ppct = ((counts.compliment / maxDept) * 100).toFixed(1);
+        return `<div style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:14px;font-weight:600;color:#333">${dept}</span>
+                <span style="font-size:12px;color:#888">${tot} bildirim · 🔴 ${counts.complaint} · ⭐ ${counts.compliment}</span>
+            </div>
+            <div style="display:flex;gap:4px;height:22px;border-radius:11px;overflow:hidden;background:#f0f0f0">
+                ${counts.complaint > 0 ? `<div style="width:${cpct}%;background:#ef4444;transition:width 0.6s"></div>` : ''}
+                ${counts.compliment > 0 ? `<div style="width:${ppct}%;background:#10b981;transition:width 0.6s"></div>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+
+    // --- ÇÖZÜM SÜRESİ DEPARTMANA GÖRE ---
+    document.getElementById('fbrDurationWrap').style.display = 'block';
+    const deptDuration = {};
+    resolvedWithTime.forEach(f => {
+        if (!deptDuration[f.department]) deptDuration[f.department] = [];
+        deptDuration[f.department].push((new Date(f.resolved_at) - new Date(f.created_at)) / 60000);
+    });
+    const durationEntries = Object.entries(deptDuration)
+        .map(([dept, times]) => ({ dept, avg: Math.round(times.reduce((a,b)=>a+b,0)/times.length) }))
+        .sort((a,b) => b.avg - a.avg);
+    const maxDur = Math.max(...durationEntries.map(d => d.avg), 1);
+    if (durationEntries.length === 0) {
+        document.getElementById('fbrDurationWrap').style.display = 'none';
+    } else {
+        document.getElementById('fbrDurationChart').innerHTML = durationEntries.map(d => {
+            const pct = ((d.avg / maxDur) * 100).toFixed(1);
+            const label = d.avg < 60 ? d.avg + ' dk' : Math.floor(d.avg/60) + 's ' + (d.avg%60) + 'dk';
+            const color = d.avg < 60 ? '#10b981' : d.avg < 180 ? '#f59e0b' : '#ef4444';
+            return `<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+                <div style="min-width:130px;font-size:14px;font-weight:600">${d.dept}</div>
+                <div style="flex:1;background:#f0f0f0;height:28px;border-radius:14px;overflow:hidden">
+                    <div style="width:${pct}%;height:100%;background:${color};display:flex;align-items:center;padding:0 12px;color:white;font-weight:700;font-size:12px;transition:width 0.6s">${label}</div>
+                </div>
+                <div style="min-width:60px;text-align:right;font-size:13px;font-weight:600;color:${color}">${label}</div>
+            </div>`;
+        }).join('');
+    }
+
+    // --- TREND GRAFİĞİ ---
+    document.getElementById('fbrTrendWrap').style.display = 'block';
+    const buckets = {};
+    data.forEach(f => {
+        const d = new Date(f.created_at);
+        let key;
+        if (trendMode === 'daily') {
+            key = d.toLocaleDateString('tr-TR', { day:'2-digit', month:'2-digit' });
+        } else if (trendMode === 'weekly') {
+            const wStart = new Date(d); wStart.setDate(d.getDate() - d.getDay());
+            key = wStart.toLocaleDateString('tr-TR', { day:'2-digit', month:'2-digit' });
+        } else {
+            key = d.toLocaleDateString('tr-TR', { month:'short', year:'2-digit' });
+        }
+        if (!buckets[key]) buckets[key] = { complaint: 0, compliment: 0 };
+        buckets[key][f.type === 'complaint' ? 'complaint' : 'compliment']++;
+    });
+    const bucketEntries = Object.entries(buckets);
+    const maxBucket = Math.max(...bucketEntries.map(([,v]) => v.complaint + v.compliment), 1);
+    document.getElementById('fbrTrendChart').innerHTML = bucketEntries.map(([key, counts]) => {
+        const tot = counts.complaint + counts.compliment;
+        const h = Math.max((tot / maxBucket) * 100, 4);
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:36px;max-width:70px">
+            <div style="font-size:11px;font-weight:700;color:#333;margin-bottom:4px">${tot}</div>
+            <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:160px">
+                <div style="width:100%;display:flex;flex-direction:column;height:${h}%;min-height:6px;border-radius:6px 6px 0 0;overflow:hidden">
+                    ${counts.complaint > 0 ? `<div style="flex:${counts.complaint};background:#ef4444"></div>` : ''}
+                    ${counts.compliment > 0 ? `<div style="flex:${counts.compliment};background:#10b981"></div>` : ''}
+                </div>
+            </div>
+            <div style="font-size:10px;color:#888;margin-top:6px;text-align:center">${key}</div>
+        </div>`;
+    }).join('');
+    // Legend
+    document.querySelector('#fbrTrendWrap h3').innerHTML = '📈 Bildirim Trendi &nbsp;<span style="font-size:12px;font-weight:400"><span style="color:#ef4444">■</span> Şikayet &nbsp;<span style="color:#10b981">■</span> Olumlu</span>';
 }
 
 </script>
