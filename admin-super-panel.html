@@ -1395,6 +1395,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea}
 <div class="menu-item" data-page="feedback" onclick="nav(this,'feedback')"><span class="icon">💬</span><span>Geri Bildirim</span></div>
 <div class="menu-item" data-page="fb-reports" onclick="nav(this,'fb-reports')"><span class="icon">📊</span><span>Bildirim Raporu</span></div>
 <div class="menu-item" data-page="ai-analyses" onclick="nav(this,'ai-analyses')"><span class="icon">🤖</span><span>AI Analizler</span></div>
+<div class="menu-item" data-page="form-manager" onclick="nav(this,'form-manager')"><span class="icon">📝</span><span>Form Yönetimi</span></div>
 <div class="menu-item" data-page="settings" onclick="nav(this,'settings')"><span class="icon">⚙️</span><span>Ayarlar</span></div>
 <div class="menu-item" data-page="users" onclick="nav(this,'users')"><span class="icon">👥</span><span>Kullanıcılar</span></div>
 <div class="sidebar-bottom">
@@ -1436,6 +1437,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea}
 <div class="stat-card success"><div class="s-label">Ortalama</div><div class="s-value" id="s-avg">0.0</div></div>
 <div class="stat-card warning"><div class="s-label">Düşük (≤3★)</div><div class="s-value" id="s-low">0</div></div>
 <div class="stat-card"><div class="s-label">Bugün</div><div class="s-value" id="s-today">0</div></div>
+</div>
+<div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<label style="font-size:13px;font-weight:600;color:#555">Form:</label>
+<select id="surveyFormFilter" onchange="renderSurveys()" style="padding:8px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;min-width:180px">
+<option value="all">Tüm Formlar</option>
+</select>
 </div>
 <div class="controls">
 <button class="filter-btn active" data-filter="all" data-type="rating">Tümü</button>
@@ -1765,6 +1772,109 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
 </div>
 
 
+
+<div id="form-manager" class="page">
+<div class="page-header"><h2>📝 Form Yönetimi</h2><p>Anket formları ve sorularını yönetin</p></div>
+
+<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+
+  <!-- Sol: Form listesi -->
+  <div style="flex:1;min-width:280px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="font-size:16px;color:#333">📋 Formlar</h3>
+      <button onclick="openFormCreateModal()" style="padding:8px 16px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">➕ Yeni Form</button>
+    </div>
+    <div id="formList" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- Sağ: Seçili form soruları -->
+  <div style="flex:2;min-width:320px">
+    <div id="formQuestionsPanel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h3 id="formQTitle" style="font-size:16px;color:#333">Sorular</h3>
+        <button onclick="openAddQuestionModal()" style="padding:8px 16px;background:#10b981;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">➕ Soru Ekle</button>
+      </div>
+      <div id="formQList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="margin-top:20px;padding:16px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd">
+        <div style="font-size:13px;font-weight:600;color:#0369a1;margin-bottom:8px">🔗 QR Bağlantısı</div>
+        <code id="formQRUrl" style="font-size:12px;color:#555;word-break:break-all;display:block;margin-bottom:10px"></code>
+        <button onclick="copyFormUrl()" style="padding:7px 14px;background:#0ea5e9;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer">📋 Kopyala</button>
+        <a id="formQRLink" href="#" target="_blank" style="margin-left:8px;padding:7px 14px;background:#667eea;color:white;border:none;border-radius:6px;font-size:12px;text-decoration:none;display:inline-block">🔗 Aç</a>
+      </div>
+    </div>
+    <div id="formQEmpty" style="text-align:center;padding:60px 20px;color:#aaa">
+      <div style="font-size:48px;margin-bottom:12px">👈</div>
+      <p>Sol taraftan bir form seçin</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Form Oluştur Modal -->
+<div id="formCreateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 style="font-size:18px;color:#333">📝 Yeni Form</h3>
+    <button onclick="closeFormCreateModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Form Adı *</label>
+      <input id="fcName" type="text" placeholder="Ör: À la Carte 1 - Akdeniz" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">URL Anahtarı * (harfsayı, tire)</label>
+      <input id="fcSlug" type="text" placeholder="Ör: alacarte1" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+      <div style="font-size:11px;color:#aaa;margin-top:4px">?form=<span id="fcSlugPreview">alacarte1</span></div>
+    </div>
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">İkon</label>
+      <input id="fcIcon" type="text" placeholder="🍽️" value="📋" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Açıklama</label>
+      <input id="fcDesc" type="text" placeholder="Ör: Akdeniz Restoranı anket formu" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button onclick="saveFormCreate()" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">💾 Oluştur</button>
+      <button onclick="closeFormCreateModal()" style="padding:12px 18px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer">İptal</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Soru Ekle Modal -->
+<div id="addQuestionModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 style="font-size:18px;color:#333">➕ Soru Ekle</h3>
+    <button onclick="closeAddQuestionModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">İkon</label>
+      <input id="aqIcon" type="text" placeholder="🍽️" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Soru Adı (TR) *</label>
+      <input id="aqNameTr" type="text" placeholder="Ör: Yemek Kalitesi" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Soru Adı (EN)</label>
+      <input id="aqNameEn" type="text" placeholder="Ör: Food Quality" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <div>
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Soru Adı (RU)</label>
+      <input id="aqNameRu" type="text" placeholder="Ör: Качество еды" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button onclick="saveAddQuestion()" style="flex:1;padding:12px;background:#10b981;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">💾 Ekle</button>
+      <button onclick="closeAddQuestionModal()" style="padding:12px 18px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer">İptal</button>
+    </div>
+  </div>
+</div>
+</div>
+
 <div id="fb-reports" class="page">
 <div class="page-header"><h2>📊 Bildirim Raporu</h2><p>Geri bildirim istatistikleri ve trendler</p></div>
 
@@ -2005,12 +2115,15 @@ async function loadQuestions(){
 
 async function loadData(){
     try{
-        const[survRes,usrRes]=await Promise.all([
+        const[survRes,usrRes,formRes]=await Promise.all([
             supabase.from('surveys').select('*').order('created_at',{ascending:false}),
-            supabase.from('users').select('*').order('created_at',{ascending:true})
+            supabase.from('users').select('*').order('created_at',{ascending:true}),
+            supabase.from('survey_forms').select('*').order('created_at',{ascending:true})
         ]);
         allSurveys=survRes.data||[];
         allUsers=usrRes.data||[];
+        allForms=formRes.data||[];
+        updateFormFilter();
         await loadQuestions();
         try {
             await initEmailJS();
@@ -2040,6 +2153,7 @@ window.nav=function(el,pageId){
     if(pageId==='emails')renderEmails();
     if(pageId==='ai-analyses')loadAIAnalyses();
     if(pageId==='feedback')loadFeedback();
+    if(pageId==='form-manager')loadFormManager();
     if(pageId==='fb-reports')initFbReport();
     if(pageId==='settings'){renderQuestions();loadGroqKey();loadEmailJSSettings();loadSuccessThreshold();loadEmailTemplate();}
 }
@@ -2131,6 +2245,8 @@ function renderSurveys(){
     if(ratingFilter==='poor')filtered=filtered.filter(s=>DEPTS.some(d=>getRating(s,d.key)>0&&getRating(s,d.key)<=3));
     if(ratingFilter==='excellent')filtered=filtered.filter(s=>DEPTS.some(d=>getRating(s,d.key)>=4));
     filtered=filterByDate(filtered,dateFilter);
+    const formF=document.getElementById('surveyFormFilter')?.value||'all';
+    if(formF!=='all')filtered=filtered.filter(s=>(s.form_id||'default')===formF);
     if(!filtered.length){el.innerHTML=`<div class="empty-state"><div class="e-icon">📭</div><h2>Anket yok</h2></div>`;return}
     const groups={};
     filtered.forEach(s=>{
@@ -2157,6 +2273,7 @@ function renderSurveyCard(s){
     const pct=(avg/5*100).toFixed(0);
     const cls=avg>=4?'excellent':avg>=3?'average':'poor';
     const time=new Date(s.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    const formName=allForms.find(f=>f.slug===(s.form_id||'default'))?.name||null;
     let alert='';
     if(avg>0&&avg<=2)alert='<span class="alert-badge danger">⚠️ DİKKAT</span>';
     else if(avg>2&&avg<=3)alert='<span class="alert-badge warning">⚠️ İZLE</span>';
@@ -2168,6 +2285,7 @@ function renderSurveyCard(s){
         <div class="survey-header">
             <div>
                 <div class="room-badge">Oda ${s.room_number}</div>
+                ${formName?`<div style="display:inline-block;padding:2px 8px;background:#667eea20;color:#667eea;border-radius:10px;font-size:11px;font-weight:600;margin-top:4px">${formName}</div>`:''}
                 <div class="badge-row">${alert}</div>
             </div>
             <div style="text-align:right">
@@ -3964,6 +4082,8 @@ window.addEventListener('DOMContentLoaded', () => {
 // ============================================
 
 let allFeedback = [];
+let allForms = [];
+let _activeFormId = null;
 
 async function loadFeedback() {
     try {
@@ -4476,6 +4596,230 @@ window.convertSurveyToFeedback = async function(surveyId) {
         event.target.style.background = '#10b981';
         await loadFeedback();
     } catch(e) { alert('❌ Aktarılamadı: ' + e.message); }
+}
+
+
+// ============================================
+// FORM YÖNETİMİ
+// ============================================
+
+// Surveys sayfası form filtresi dropdown'ını güncelle
+function updateFormFilter() {
+    const sel = document.getElementById('surveyFormFilter');
+    if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = '<option value="all">Tüm Formlar</option>' +
+        '<option value="default">Oda Anketi (varsayılan)</option>' +
+        allForms.map(f => `<option value="${f.slug}">${f.icon||'📋'} ${f.name}</option>`).join('');
+    if (prev) sel.value = prev;
+}
+
+async function loadFormManager() {
+    try {
+        const { data, error } = await supabase.from('survey_forms').select('*').order('created_at', { ascending: true });
+        if (error) throw error;
+        allForms = data || [];
+        renderFormList();
+        updateFormFilter();
+    } catch(e) {
+        console.error('Form yükleme hatası:', e);
+    }
+}
+
+function renderFormList() {
+    const el = document.getElementById('formList');
+    if (!el) return;
+    if (!allForms.length) {
+        el.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:14px">Henüz form yok</div>';
+        return;
+    }
+    el.innerHTML = allForms.map(f => {
+        const isActive = _activeFormId === f.id;
+        const cnt = allSurveys.filter(s => s.form_id === f.slug).length;
+        return `<div onclick="selectForm('${f.id}')" style="padding:14px 16px;border-radius:10px;border:2px solid ${isActive?'#667eea':'#e0e0e0'};background:${isActive?'#f0f4ff':'white'};cursor:pointer;transition:all .2s">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="display:flex;gap:10px;align-items:center">
+                    <span style="font-size:22px">${f.icon||'📋'}</span>
+                    <div>
+                        <div style="font-weight:700;font-size:15px;color:${isActive?'#667eea':'#222'}">${f.name}</div>
+                        <div style="font-size:12px;color:#aaa;margin-top:2px">?form=${f.slug} · ${cnt} yanıt</div>
+                    </div>
+                </div>
+                <button onclick="event.stopPropagation();deleteForm('${f.id}')" style="padding:5px 10px;background:#fee2e2;color:#ef4444;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function selectForm(id) {
+    _activeFormId = id;
+    renderFormList();
+    const form = allForms.find(f => f.id === id);
+    if (!form) return;
+    document.getElementById('formQEmpty').style.display = 'none';
+    document.getElementById('formQuestionsPanel').style.display = 'block';
+    document.getElementById('formQTitle').textContent = `${form.icon||'📋'} ${form.name} — Sorular`;
+
+    // URL göster
+    const base = 'https://noxinndeluxe.github.io/qr/anket-misafir.html';
+    const url = `${base}?form=${form.slug}`;
+    document.getElementById('formQRUrl').textContent = url;
+    document.getElementById('formQRLink').href = url;
+
+    await loadFormQuestions(id);
+}
+
+async function loadFormQuestions(formId) {
+    try {
+        const { data, error } = await supabase
+            .from('survey_questions')
+            .select('*')
+            .eq('form_id', formId)
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true });
+        if (error) throw error;
+        renderFormQuestions(data || [], formId);
+    } catch(e) {
+        console.error('Soru yükleme hatası:', e);
+    }
+}
+
+function renderFormQuestions(questions, formId) {
+    const el = document.getElementById('formQList');
+    if (!questions.length) {
+        el.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:14px;background:#f8f9ff;border-radius:10px">Henüz soru eklenmedi. ➕ Soru Ekle butonunu kullanın.</div>';
+        return;
+    }
+    el.innerHTML = questions.map((q, i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:white;border-radius:10px;border:1px solid #e0e0e0">
+            <span style="font-size:20px">${q.icon||'❓'}</span>
+            <div style="flex:1">
+                <div style="font-weight:600;font-size:14px;color:#222">${q.name_tr}</div>
+                ${q.name_en ? `<div style="font-size:12px;color:#aaa">${q.name_en}${q.name_ru?' · '+q.name_ru:''}</div>` : ''}
+            </div>
+            <span style="font-size:12px;color:#aaa">#${q.sort_order||i+1}</span>
+            <button onclick="deleteFormQuestion('${q.id}')" style="padding:5px 10px;background:#fee2e2;color:#ef4444;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
+        </div>`).join('');
+}
+
+window.openFormCreateModal = function() {
+    document.getElementById('fcName').value = '';
+    document.getElementById('fcSlug').value = '';
+    document.getElementById('fcIcon').value = '📋';
+    document.getElementById('fcDesc').value = '';
+    document.getElementById('fcSlugPreview').textContent = '';
+    document.getElementById('formCreateModal').style.display = 'flex';
+    document.getElementById('fcName').oninput = function() {
+        const slug = this.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'').slice(0,20);
+        document.getElementById('fcSlug').value = slug;
+        document.getElementById('fcSlugPreview').textContent = slug;
+    };
+    document.getElementById('fcSlug').oninput = function() {
+        document.getElementById('fcSlugPreview').textContent = this.value;
+    };
+}
+window.closeFormCreateModal = function() {
+    document.getElementById('formCreateModal').style.display = 'none';
+}
+
+window.saveFormCreate = async function() {
+    const name = document.getElementById('fcName').value.trim();
+    const slug = document.getElementById('fcSlug').value.trim();
+    const icon = document.getElementById('fcIcon').value.trim() || '📋';
+    const desc = document.getElementById('fcDesc').value.trim();
+    if (!name || !slug) { alert('⚠️ Form adı ve URL anahtarı zorunlu!'); return; }
+    if (allForms.find(f => f.slug === slug)) { alert('⚠️ Bu URL anahtarı zaten kullanılıyor!'); return; }
+    try {
+        const { data, error } = await supabase.from('survey_forms').insert([{
+            name, slug, icon, description: desc || null,
+            created_at: new Date().toISOString(),
+            created_by: curUser.username
+        }]).select();
+        if (error) throw error;
+        allForms.push(data[0]);
+        closeFormCreateModal();
+        renderFormList();
+        updateFormFilter();
+        selectForm(data[0].id);
+    } catch(e) { alert('❌ Oluşturulamadı: ' + e.message); }
+}
+
+window.deleteForm = async function(id) {
+    const f = allForms.find(x => x.id === id);
+    if (!confirm(`"${f?.name}" formunu silmek istediğinizden emin misiniz?\nForma ait sorular da silinir.`)) return;
+    try {
+        await supabase.from('survey_questions').delete().eq('form_id', id);
+        const { error } = await supabase.from('survey_forms').delete().eq('id', id);
+        if (error) throw error;
+        allForms = allForms.filter(x => x.id !== id);
+        if (_activeFormId === id) {
+            _activeFormId = null;
+            document.getElementById('formQuestionsPanel').style.display = 'none';
+            document.getElementById('formQEmpty').style.display = 'block';
+        }
+        renderFormList();
+        updateFormFilter();
+    } catch(e) { alert('❌ Silinemedi: ' + e.message); }
+}
+
+window.openAddQuestionModal = function() {
+    document.getElementById('aqIcon').value = '';
+    document.getElementById('aqNameTr').value = '';
+    document.getElementById('aqNameEn').value = '';
+    document.getElementById('aqNameRu').value = '';
+    document.getElementById('addQuestionModal').style.display = 'flex';
+}
+window.closeAddQuestionModal = function() {
+    document.getElementById('addQuestionModal').style.display = 'none';
+}
+
+window.saveAddQuestion = async function() {
+    const icon = document.getElementById('aqIcon').value.trim() || '❓';
+    const nameTr = document.getElementById('aqNameTr').value.trim();
+    const nameEn = document.getElementById('aqNameEn').value.trim();
+    const nameRu = document.getElementById('aqNameRu').value.trim();
+    if (!nameTr) { alert('⚠️ Türkçe soru adı zorunlu!'); return; }
+    if (!_activeFormId) { alert('⚠️ Önce bir form seçin!'); return; }
+
+    // Mevcut soru sayısını al
+    const { data: existing } = await supabase.from('survey_questions').select('sort_order').eq('form_id', _activeFormId).order('sort_order', { ascending: false }).limit(1);
+    const nextOrder = (existing?.[0]?.sort_order || 0) + 1;
+    const key = `form_${_activeFormId.slice(0,8)}_q${nextOrder}`;
+
+    try {
+        const { error } = await supabase.from('survey_questions').insert([{
+            form_id: _activeFormId,
+            key, icon,
+            name_tr: nameTr,
+            name_en: nameEn || nameTr,
+            name_ru: nameRu || nameTr,
+            name_de: nameTr, name_pl: nameTr, name_cs: nameTr,
+            name_fr: nameTr, name_da: nameTr, name_ro: nameTr,
+            sort_order: nextOrder,
+            is_active: true
+        }]);
+        if (error) throw error;
+        closeAddQuestionModal();
+        await loadFormQuestions(_activeFormId);
+    } catch(e) { alert('❌ Soru eklenemedi: ' + e.message); }
+}
+
+window.deleteFormQuestion = async function(id) {
+    if (!confirm('Bu soruyu silmek istediğinizden emin misiniz?')) return;
+    try {
+        const { error } = await supabase.from('survey_questions').delete().eq('id', id);
+        if (error) throw error;
+        await loadFormQuestions(_activeFormId);
+    } catch(e) { alert('❌ Silinemedi: ' + e.message); }
+}
+
+window.copyFormUrl = function() {
+    const url = document.getElementById('formQRUrl').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = event.target;
+        btn.textContent = '✅ Kopyalandı!';
+        setTimeout(() => btn.textContent = '📋 Kopyala', 2000);
+    });
 }
 
 </script>
