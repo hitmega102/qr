@@ -1353,6 +1353,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea}
 <div class="menu-item" data-page="surveys" onclick="nav(this,'surveys')"><span class="icon">📋</span><span>Anketler</span></div>
 <div class="menu-item" data-page="emails" onclick="nav(this,'emails')"><span class="icon">📧</span><span>E-postalar</span></div>
 <div class="menu-item" data-page="reports" onclick="nav(this,'reports')"><span class="icon">📈</span><span>Raporlar</span></div>
+<div class="menu-item" data-page="feedback" onclick="nav(this,'feedback')"><span class="icon">💬</span><span>Geri Bildirim</span></div>
 <div class="menu-item" data-page="ai-analyses" onclick="nav(this,'ai-analyses')"><span class="icon">🤖</span><span>AI Analizler</span></div>
 <div class="menu-item" data-page="settings" onclick="nav(this,'settings')"><span class="icon">⚙️</span><span>Ayarlar</span></div>
 <div class="menu-item" data-page="users" onclick="nav(this,'users')"><span class="icon">👥</span><span>Kullanıcılar</span></div>
@@ -1584,6 +1585,111 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
 </div>
 
 <!-- AI ANALIZLER -->
+<div id="feedback" class="page">
+<div class="page-header"><h2>💬 Geri Bildirim</h2><p>Şikayet ve olumlu bildirimlerin takibi</p></div>
+
+<div class="stats-grid" style="margin-bottom:20px">
+<div class="stat-card danger"><div class="s-icon">🔴</div><div class="s-label">Açık Şikayetler</div><div class="s-value" id="fb-open">0</div></div>
+<div class="stat-card warning"><div class="s-icon">⏳</div><div class="s-label">İşlemde</div><div class="s-value" id="fb-inprogress">0</div></div>
+<div class="stat-card success"><div class="s-icon">✅</div><div class="s-label">Çözüldü</div><div class="s-value" id="fb-resolved">0</div></div>
+<div class="stat-card"><div class="s-icon">⭐</div><div class="s-label">Olumlu</div><div class="s-value" id="fb-positive">0</div></div>
+</div>
+
+<div class="controls" style="margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+<button class="btn btn-primary" onclick="openFeedbackModal()">➕ Yeni Bildirim</button>
+<select id="fbFilterType" onchange="renderFeedback()" style="padding:10px 16px;border-radius:8px;border:2px solid #e0e0e0;font-size:14px">
+  <option value="all">Tümü</option>
+  <option value="complaint">Şikayetler</option>
+  <option value="compliment">Olumlu</option>
+</select>
+<select id="fbFilterStatus" onchange="renderFeedback()" style="padding:10px 16px;border-radius:8px;border:2px solid #e0e0e0;font-size:14px">
+  <option value="all">Tüm Durumlar</option>
+  <option value="open">Açık</option>
+  <option value="inprogress">İşlemde</option>
+  <option value="resolved">Çözüldü</option>
+</select>
+<select id="fbFilterDept" onchange="renderFeedback()" style="padding:10px 16px;border-radius:8px;border:2px solid #e0e0e0;font-size:14px">
+  <option value="all">Tüm Departmanlar</option>
+  <option value="Resepsiyon">Resepsiyon</option>
+  <option value="Kat Hizmetleri">Kat Hizmetleri</option>
+  <option value="Restoran">Restoran</option>
+  <option value="Bar">Bar</option>
+  <option value="Teknik Servis">Teknik Servis</option>
+  <option value="Havuz & Plaj">Havuz & Plaj</option>
+  <option value="Animasyon">Animasyon</option>
+  <option value="Güvenlik">Güvenlik</option>
+  <option value="Genel">Genel</option>
+</select>
+<button class="btn btn-info" onclick="loadFeedback()">🔄 Yenile</button>
+</div>
+
+<div id="feedbackList" style="display:flex;flex-direction:column;gap:14px"></div>
+</div>
+
+<!-- Geri Bildirim Modal -->
+<div id="feedbackModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+<h3 id="feedbackModalTitle" style="font-size:20px;color:#333">➕ Yeni Bildirim</h3>
+<button onclick="closeFeedbackModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+</div>
+<input type="hidden" id="fbEditId">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div>
+  <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Tür *</label>
+  <select id="fbType" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    <option value="complaint">🔴 Şikayet</option>
+    <option value="compliment">⭐ Olumlu Bildirim</option>
+  </select>
+</div>
+<div>
+  <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Oda No</label>
+  <input type="text" id="fbRoom" placeholder="Ör: 215" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+</div>
+<div>
+  <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Misafir Adı</label>
+  <input type="text" id="fbGuest" placeholder="Ör: Ahmet Yılmaz" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+</div>
+<div>
+  <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Departman *</label>
+  <select id="fbDept" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    <option value="Resepsiyon">Resepsiyon</option>
+    <option value="Kat Hizmetleri">Kat Hizmetleri</option>
+    <option value="Restoran">Restoran</option>
+    <option value="Bar">Bar</option>
+    <option value="Teknik Servis">Teknik Servis</option>
+    <option value="Havuz & Plaj">Havuz & Plaj</option>
+    <option value="Animasyon">Animasyon</option>
+    <option value="Güvenlik">Güvenlik</option>
+    <option value="Genel">Genel</option>
+  </select>
+</div>
+<div>
+  <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Açıklama *</label>
+  <textarea id="fbDesc" rows="4" placeholder="Bildirimin detayları..." style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;resize:vertical"></textarea>
+</div>
+<div>
+  <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Sorumlu Personel</label>
+  <select id="fbAssigned" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    <option value="">— Atanmadı —</option>
+  </select>
+</div>
+<div>
+  <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Durum</label>
+  <select id="fbStatus" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    <option value="open">🔴 Açık</option>
+    <option value="inprogress">🟡 İşlemde</option>
+    <option value="resolved">🟢 Çözüldü</option>
+  </select>
+</div>
+<div style="display:flex;gap:12px;margin-top:8px">
+  <button onclick="saveFeedback()" style="flex:1;padding:13px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">💾 Kaydet</button>
+  <button onclick="closeFeedbackModal()" style="padding:13px 20px;background:#f0f0f0;border:none;border-radius:8px;font-size:15px;cursor:pointer">İptal</button>
+</div>
+</div>
+</div>
+</div>
+
 <div id="ai-analyses" class="page">
 <div class="page-header"><h2>🤖 AI Analizler</h2><p>Yapay zeka destekli yorum analizi</p></div>
 
@@ -1804,6 +1910,7 @@ window.nav=function(el,pageId){
     if(pageId==='users')renderUsers();
     if(pageId==='emails')renderEmails();
     if(pageId==='ai-analyses')loadAIAnalyses();
+    if(pageId==='feedback')loadFeedback();
     if(pageId==='settings'){renderQuestions();loadGroqKey();loadEmailJSSettings();loadSuccessThreshold();loadEmailTemplate();}
 }
 
@@ -3719,6 +3826,169 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSuccessThreshold();
     loadEmailTemplate();
 });
+
+
+// ============================================
+// GERİ BİLDİRİM YÖNETİMİ
+// ============================================
+
+let allFeedback = [];
+
+async function loadFeedback() {
+    try {
+        const { data, error } = await supabase
+            .from('feedback')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        allFeedback = data || [];
+        renderFeedback();
+        updateFeedbackStats();
+    } catch(e) {
+        console.error('Feedback yükleme hatası:', e);
+        const el = document.getElementById('feedbackList');
+        if(el) el.innerHTML = `<div class="empty-state"><div class="e-icon">⚠️</div><h3>Yükleme Hatası</h3><p>${e.message}</p></div>`;
+    }
+}
+
+function updateFeedbackStats() {
+    const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    const complaints = allFeedback.filter(f => f.type === 'complaint');
+    setEl('fb-open', complaints.filter(f => f.status === 'open').length);
+    setEl('fb-inprogress', complaints.filter(f => f.status === 'inprogress').length);
+    setEl('fb-resolved', allFeedback.filter(f => f.status === 'resolved').length);
+    setEl('fb-positive', allFeedback.filter(f => f.type === 'compliment').length);
+}
+
+function renderFeedback() {
+    const typeFilter = document.getElementById('fbFilterType')?.value || 'all';
+    const statusFilter = document.getElementById('fbFilterStatus')?.value || 'all';
+    const deptFilter = document.getElementById('fbFilterDept')?.value || 'all';
+    let filtered = allFeedback.filter(f => {
+        if (typeFilter !== 'all' && f.type !== typeFilter) return false;
+        if (statusFilter !== 'all' && f.status !== statusFilter) return false;
+        if (deptFilter !== 'all' && f.department !== deptFilter) return false;
+        return true;
+    });
+    const container = document.getElementById('feedbackList');
+    if (!container) return;
+    if (!filtered.length) {
+        container.innerHTML = `<div class="empty-state"><div class="e-icon">💬</div><h3>Bildirim Bulunamadı</h3><p>Seçilen filtrelere uygun kayıt yok</p></div>`;
+        return;
+    }
+    container.innerHTML = filtered.map(f => {
+        const isComplaint = f.type === 'complaint';
+        const statusMap = { open:{label:'Açık',color:'#ef4444',icon:'🔴'}, inprogress:{label:'İşlemde',color:'#f59e0b',icon:'🟡'}, resolved:{label:'Çözüldü',color:'#10b981',icon:'🟢'} };
+        const st = statusMap[f.status] || statusMap.open;
+        const created = new Date(f.created_at).toLocaleString('tr-TR');
+        const resolvedAt = f.resolved_at ? new Date(f.resolved_at).toLocaleString('tr-TR') : null;
+        let duration = '';
+        if (f.resolved_at && f.created_at) {
+            const mins = Math.round((new Date(f.resolved_at) - new Date(f.created_at)) / 60000);
+            duration = mins < 60 ? `${mins} dk` : `${Math.floor(mins/60)}s ${mins%60}dk`;
+        }
+        return `<div style="background:white;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);border-left:4px solid ${isComplaint?'#ef4444':'#10b981'}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+                <div style="display:flex;gap:12px;align-items:center">
+                    <span style="font-size:22px">${isComplaint?'🔴':'⭐'}</span>
+                    <div>
+                        <div style="font-weight:700;font-size:16px;color:#222">${isComplaint?'Şikayet':'Olumlu Bildirim'}${f.room_number?' — Oda '+f.room_number:''}</div>
+                        <div style="font-size:13px;color:#888;margin-top:2px">${f.guest_name||'Misafir belirtilmedi'} · ${f.department} · ${created}</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <span style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${st.color}20;color:${st.color}">${st.icon} ${st.label}</span>
+                    ${duration?`<span style="padding:5px 12px;border-radius:20px;font-size:12px;background:#f0f0f0;color:#666">⏱ ${duration}</span>`:''}
+                    <button onclick="editFeedback('${f.id}')" style="padding:6px 12px;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px">✏️ Düzenle</button>
+                    <button onclick="deleteFeedback('${f.id}')" style="padding:6px 12px;background:#fee2e2;color:#ef4444;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
+                </div>
+            </div>
+            <div style="margin-top:14px;padding:14px;background:#f8f9ff;border-radius:8px;font-size:14px;color:#444;line-height:1.6">${f.description}</div>
+            ${f.assigned_to?`<div style="margin-top:10px;font-size:13px;color:#666">👤 Sorumlu: <strong>${f.assigned_to}</strong></div>`:''}
+            ${resolvedAt?`<div style="margin-top:4px;font-size:13px;color:#10b981">✅ Çözüm: ${resolvedAt}</div>`:''}
+        </div>`;
+    }).join('');
+}
+
+window.openFeedbackModal = function() {
+    document.getElementById('fbEditId').value = '';
+    document.getElementById('feedbackModalTitle').textContent = '➕ Yeni Bildirim';
+    document.getElementById('fbType').value = 'complaint';
+    document.getElementById('fbRoom').value = '';
+    document.getElementById('fbGuest').value = '';
+    document.getElementById('fbDept').value = 'Resepsiyon';
+    document.getElementById('fbDesc').value = '';
+    document.getElementById('fbStatus').value = 'open';
+    const sel = document.getElementById('fbAssigned');
+    sel.innerHTML = '<option value="">— Atanmadı —</option>' + allUsers.map(u => `<option value="${u.username}">${u.username}</option>`).join('');
+    document.getElementById('feedbackModal').style.display = 'flex';
+}
+
+window.editFeedback = function(id) {
+    const f = allFeedback.find(x => x.id == id);
+    if (!f) return;
+    document.getElementById('fbEditId').value = f.id;
+    document.getElementById('feedbackModalTitle').textContent = '✏️ Bildirimi Düzenle';
+    document.getElementById('fbType').value = f.type;
+    document.getElementById('fbRoom').value = f.room_number || '';
+    document.getElementById('fbGuest').value = f.guest_name || '';
+    document.getElementById('fbDept').value = f.department;
+    document.getElementById('fbDesc').value = f.description;
+    document.getElementById('fbStatus').value = f.status;
+    const sel = document.getElementById('fbAssigned');
+    sel.innerHTML = '<option value="">— Atanmadı —</option>' + allUsers.map(u => `<option value="${u.username}" ${u.username===f.assigned_to?'selected':''}>${u.username}</option>`).join('');
+    document.getElementById('feedbackModal').style.display = 'flex';
+}
+
+window.closeFeedbackModal = function() {
+    document.getElementById('feedbackModal').style.display = 'none';
+}
+
+window.saveFeedback = async function() {
+    const id = document.getElementById('fbEditId').value;
+    const desc = document.getElementById('fbDesc').value.trim();
+    if (!desc) { alert('⚠️ Açıklama zorunlu!'); return; }
+    const status = document.getElementById('fbStatus').value;
+    const payload = {
+        type: document.getElementById('fbType').value,
+        department: document.getElementById('fbDept').value,
+        description: desc,
+        room_number: document.getElementById('fbRoom').value.trim() || null,
+        guest_name: document.getElementById('fbGuest').value.trim() || null,
+        assigned_to: document.getElementById('fbAssigned').value || null,
+        status,
+        updated_at: new Date().toISOString(),
+        updated_by: curUser.username
+    };
+    if (status === 'resolved') {
+        const existing = id ? allFeedback.find(f => f.id == id) : null;
+        if (!existing || existing.status !== 'resolved') payload.resolved_at = new Date().toISOString();
+    } else {
+        payload.resolved_at = null;
+    }
+    try {
+        let error;
+        if (id) {
+            ({ error } = await supabase.from('feedback').update(payload).eq('id', id));
+        } else {
+            payload.created_at = new Date().toISOString();
+            payload.created_by = curUser.username;
+            ({ error } = await supabase.from('feedback').insert([payload]));
+        }
+        if (error) throw error;
+        closeFeedbackModal();
+        await loadFeedback();
+    } catch(e) { alert('❌ Kaydedilemedi: ' + e.message); }
+}
+
+window.deleteFeedback = async function(id) {
+    if (!confirm('Bu bildirimi silmek istediğinizden emin misiniz?')) return;
+    try {
+        const { error } = await supabase.from('feedback').delete().eq('id', id);
+        if (error) throw error;
+        await loadFeedback();
+    } catch(e) { alert('❌ Silinemedi: ' + e.message); }
+}
 
 </script>
 </body>
