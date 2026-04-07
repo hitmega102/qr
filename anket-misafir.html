@@ -207,21 +207,46 @@ let currentLang = 'tr';
 const ratings = {};
 
 // ─── LOAD QUESTIONS FROM DATABASE ────────────────────────────
-async function loadQuestions() {
+let CURRENT_FORM = null; // { id, name, slug, icon, description }
+
+async function loadQuestions(formSlug) {
     try {
-        const { data, error } = await supabase
-            .from('survey_questions')
-            .select('*')
-            .eq('is_active', true)
-            .order('sort_order', { ascending: true });
-        
-        if (error) throw error;
-        
-        QUESTIONS_DB = data || [];
-        console.log('✅ Sorular yüklendi:', QUESTIONS_DB.length);
+        let query;
+        if (formSlug && formSlug !== 'default') {
+            // Önce formu bul
+            const { data: formData, error: formErr } = await supabase
+                .from('survey_forms')
+                .select('*')
+                .eq('slug', formSlug)
+                .maybeSingle();
+            if (formErr) throw formErr;
+            CURRENT_FORM = formData;
+
+            if (CURRENT_FORM) {
+                // Bu forma ait sorular
+                const { data, error } = await supabase
+                    .from('survey_questions')
+                    .select('*')
+                    .eq('form_id', CURRENT_FORM.id)
+                    .eq('is_active', true)
+                    .order('sort_order', { ascending: true });
+                if (error) throw error;
+                QUESTIONS_DB = data || [];
+            }
+        } else {
+            // Varsayılan: form_id NULL olan sorular (eski oda anketi)
+            const { data, error } = await supabase
+                .from('survey_questions')
+                .select('*')
+                .is('form_id', null)
+                .eq('is_active', true)
+                .order('sort_order', { ascending: true });
+            if (error) throw error;
+            QUESTIONS_DB = data || [];
+        }
+        console.log('✅ Sorular yüklendi:', QUESTIONS_DB.length, CURRENT_FORM?.name||'varsayılan');
     } catch (e) {
         console.error('❌ Soru yükleme hatası:', e);
-        // Fallback: boş bırak (kullanıcıya mesaj göster)
         QUESTIONS_DB = [];
     }
 }
@@ -482,7 +507,8 @@ window.submitSurvey = async function() {
             room_number: room,
             email: email,
             comments: document.getElementById('comments').value || null,
-            ratings: ratingsObj
+            ratings: ratingsObj,
+            form_id: CURRENT_FORM?.slug || null
         };
 
         const { error } = await supabase.from('surveys').insert([payload]);
@@ -509,15 +535,23 @@ function hideError() { document.getElementById('errorMessage').classList.remove(
 
 // ─── INIT ─────────────────────────────────────────────────────
 (async function init() {
-    // ÖNCE SORULARI YÜKLe
-    await loadQuestions();
-    
-    // URL'den oda
-    const url = new URLSearchParams(window.location.search);
-    const room = decodeURIComponent(url.get('oda') || '');
+    const urlParams = new URLSearchParams(window.location.search);
+    const formSlug = urlParams.get('form') || null;
+    const room = decodeURIComponent(urlParams.get('oda') || '');
+
+    // Önce formu ve soruları yükle
+    await loadQuestions(formSlug);
+
+    // Form başlığını güncelle
+    if (CURRENT_FORM) {
+        const titleEl = document.getElementById('surveyTitle');
+        const subtitleEl = document.getElementById('surveySubtitle');
+        if (titleEl) titleEl.textContent = `${CURRENT_FORM.icon||'🍽️'} ${CURRENT_FORM.name}`;
+        if (subtitleEl && CURRENT_FORM.description) subtitleEl.textContent = CURRENT_FORM.description;
+    }
+
     if (room) document.getElementById('roomNumber').value = room;
-    
-    // Dil
+
     currentLang = detectLang();
     setLang(currentLang);
 })();
