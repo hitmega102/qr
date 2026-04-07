@@ -4604,7 +4604,7 @@ window.convertSurveyToFeedback = async function(surveyId) {
 // ============================================
 
 // Surveys sayfası form filtresi dropdown'ını güncelle
-function updateFormFilter() {
+window.updateFormFilter = function() {
     const sel = document.getElementById('surveyFormFilter');
     if (!sel) return;
     const prev = sel.value;
@@ -4614,7 +4614,7 @@ function updateFormFilter() {
     if (prev) sel.value = prev;
 }
 
-async function loadFormManager() {
+window.loadFormManager = async function() {
     try {
         const { data, error } = await supabase.from('survey_forms').select('*').order('created_at', { ascending: true });
         if (error) throw error;
@@ -4626,7 +4626,7 @@ async function loadFormManager() {
     }
 }
 
-function renderFormList() {
+window.renderFormList = function() {
     const el = document.getElementById('formList');
     if (!el) return;
     if (!allForms.length) {
@@ -4651,7 +4651,7 @@ function renderFormList() {
     }).join('');
 }
 
-async function selectForm(id) {
+window.selectForm = async function(id) {
     _activeFormId = id;
     renderFormList();
     const form = allForms.find(f => f.id === id);
@@ -4669,7 +4669,7 @@ async function selectForm(id) {
     await loadFormQuestions(id);
 }
 
-async function loadFormQuestions(formId) {
+window.loadFormQuestions = async function(formId) {
     try {
         const { data, error } = await supabase
             .from('survey_questions')
@@ -4684,7 +4684,7 @@ async function loadFormQuestions(formId) {
     }
 }
 
-function renderFormQuestions(questions, formId) {
+window.renderFormQuestions = function(questions, formId) {
     const el = document.getElementById('formQList');
     if (!questions.length) {
         el.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:14px;background:#f8f9ff;border-radius:10px">Henüz soru eklenmedi. ➕ Soru Ekle butonunu kullanın.</div>';
