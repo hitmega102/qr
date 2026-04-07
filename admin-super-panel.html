@@ -1328,6 +1328,45 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea}
 .pdf-export-btn:hover{background:#b91c1c;transform:translateY(-2px);box-shadow:0 5px 16px rgba(220,38,38,.4)}
 @media(max-width:900px){.sidebar{width:64px}.sidebar-logo h1 span:last-child{display:none}.menu-item span:last-child{display:none}.sidebar-bottom .user-name,.sidebar-bottom .user-role,.sidebar-bottom .logout-btn{display:none}.main{margin-left:64px;padding:18px}}
 @media(max-width:600px){.sidebar{width:100%;height:auto;position:relative;display:flex;overflow-x:auto;padding:10px}.sidebar-logo{display:none}.menu-item{flex-direction:column;padding:8px 12px;font-size:10px;gap:4px}.sidebar-bottom{display:none}.main{margin-left:0;padding:12px}}
+
+@media print {
+    body { background: white !important; }
+    .sidebar { display: none !important; }
+    .main { margin-left: 0 !important; padding: 20px !important; }
+    .page { display: none !important; }
+    #fb-reports { display: block !important; }
+    .controls { display: none !important; }
+    #fbrPrintBtn { display: none !important; }
+    .page-header h2 { font-size: 20px; color: #333 !important; }
+    .stat-card { border: 1px solid #ddd !important; box-shadow: none !important; }
+    .chart-wrap { box-shadow: none !important; border: 1px solid #ddd !important; break-inside: avoid; }
+    #fbrTrendChart { height: 160px !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+
+@keyframes urgentBlink {
+    0%,100% { background: #fee2e2; border-color: #ef4444; }
+    50%      { background: #fca5a5; border-color: #b91c1c; }
+}
+.fb-urgent {
+    animation: urgentBlink 1.4s ease-in-out infinite;
+    border-left: 4px solid #ef4444 !important;
+}
+.fb-urgent .fb-urgent-badge {
+    display: inline-flex !important;
+}
+.fb-urgent-badge {
+    display: none;
+    padding: 3px 10px;
+    background: #ef4444;
+    color: white;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 8px;
+    animation: urgentBlink 0.8s ease-in-out infinite;
+}
+
 </style>
 </head>
 <body>
@@ -1376,12 +1415,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea}
 <div class="stat-card success"><div class="s-icon">⭐</div><div class="s-label">Genel Ortalama</div><div class="s-value" id="d-avg">0.0</div></div>
 <div class="stat-card warning"><div class="s-icon">📅</div><div class="s-label">Bu Hafta</div><div class="s-value" id="d-week">0</div></div>
 <div class="stat-card"><div class="s-icon">🕐</div><div class="s-label">Bugün</div><div class="s-value" id="d-today">0</div></div>
+<div class="stat-card danger"><div class="s-icon">🔴</div><div class="s-label">Açık Şikayet</div><div class="s-value" id="d-fb-open">0</div></div>
+<div class="stat-card warning"><div class="s-icon">⚠️</div><div class="s-label">2+ Saat Açık</div><div class="s-value" id="d-fb-urgent">0</div></div>
 </div>
 <div class="quick-actions">
 <div class="action-card" onclick="nav(document.querySelector('[data-page=surveys]'),'surveys')"><div class="a-icon">📋</div><h3>Anketler</h3><p>Tüm anketler</p></div>
 <div class="action-card" onclick="nav(document.querySelector('[data-page=emails]'),'emails')"><div class="a-icon">📧</div><h3>E-postalar</h3><p>Misafir mailleri</p></div>
 <div class="action-card" onclick="nav(document.querySelector('[data-page=reports]'),'reports')"><div class="a-icon">📈</div><h3>Raporlar</h3><p>Performans</p></div>
 <div class="action-card" id="settingsQuickAction" onclick="nav(document.querySelector('[data-page=settings]'),'settings')"><div class="a-icon">⚙️</div><h3>Ayarlar</h3><p>Soru yönetimi</p></div>
+<div class="action-card" onclick="nav(document.querySelector('[data-page=feedback]'),'feedback')"><div class="a-icon">💬</div><h3>Bildirimler</h3><p>Şikayet takibi</p></div>
 </div>
 <div class="chart-wrap"><h3>📊 Departman Performansı (Son 30 Gün)</h3><div class="bar-chart" id="dashChart"></div></div>
 </div>
@@ -1622,9 +1664,40 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
   <option value="Genel">Genel</option>
 </select>
 <button class="btn btn-info" onclick="loadFeedback()">🔄 Yenile</button>
+<button class="btn btn-warning" onclick="openFbConvertModal()" style="background:#f59e0b;color:white;border:none">🔄 Anketten Aktar</button>
 </div>
 
 <div id="feedbackList" style="display:flex;flex-direction:column;gap:14px"></div>
+</div>
+
+
+<!-- Not Modal -->
+<div id="fbNoteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 style="font-size:18px;color:#333">📝 İç Notlar</h3>
+    <button onclick="closeFbNoteModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <div id="fbNotesList" style="max-height:260px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:10px"></div>
+  <textarea id="fbNoteText" rows="3" placeholder="Not ekle..." style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;resize:vertical;margin-bottom:12px"></textarea>
+  <div style="display:flex;gap:10px">
+    <button onclick="saveFbNote()" style="flex:1;padding:11px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer">💾 Not Ekle</button>
+    <button onclick="closeFbNoteModal()" style="padding:11px 18px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer">İptal</button>
+  </div>
+</div>
+</div>
+
+<!-- Anketten Şikayete Dönüştür Modal -->
+<div id="fbConvertModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h3 style="font-size:18px;color:#333">🔄 Düşük Puanlı Anketler</h3>
+    <button onclick="closeFbConvertModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <p style="font-size:13px;color:#888;margin-bottom:16px">≤2 yıldız içeren anketler. Şikayete dönüştürmek istediğinizi seçin.</p>
+  <div id="fbConvertList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
+  <button onclick="closeFbConvertModal()" style="width:100%;padding:11px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer;font-size:14px">Kapat</button>
+</div>
 </div>
 
 <!-- Geri Bildirim Modal -->
@@ -1713,6 +1786,7 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
     </select>
   </div>
   <button onclick="renderFbReport()" style="margin-top:18px;padding:10px 22px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🔍 Raporu Getir</button>
+  <button id="fbrPrintBtn" onclick="printFbReport()" style="margin-top:18px;padding:10px 22px;background:#ef4444;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">📄 PDF İndir</button>
 </div>
 
 <!-- Özet kartlar -->
@@ -1943,6 +2017,7 @@ async function loadData(){
         } catch(emailErr) {
             console.log('EmailJS yükleme atlandı:', emailErr.message);
         }
+        loadFeedback().then(()=>updateDashboardFeedback());
         updateDashboard();updateSurveysStats();renderSurveys();renderUsers();renderEmails();renderQuestions();
     }catch(e){console.error('loadData hatası:',e)}
 }
@@ -1983,6 +2058,7 @@ function updateDashboard(){
     const todayStr=now.toDateString();
     document.getElementById('d-today').textContent=allSurveys.filter(s=>new Date(s.created_at).toDateString()===todayStr).length;
     renderChart();
+    updateDashboardFeedback();
 }
 
 function renderChart(){
@@ -3915,56 +3991,6 @@ function updateFeedbackStats() {
     setEl('fb-positive', allFeedback.filter(f => f.type === 'compliment').length);
 }
 
-function renderFeedback() {
-    const typeFilter = document.getElementById('fbFilterType')?.value || 'all';
-    const statusFilter = document.getElementById('fbFilterStatus')?.value || 'all';
-    const deptFilter = document.getElementById('fbFilterDept')?.value || 'all';
-    let filtered = allFeedback.filter(f => {
-        if (typeFilter !== 'all' && f.type !== typeFilter) return false;
-        if (statusFilter !== 'all' && f.status !== statusFilter) return false;
-        if (deptFilter !== 'all' && f.department !== deptFilter) return false;
-        return true;
-    });
-    const container = document.getElementById('feedbackList');
-    if (!container) return;
-    if (!filtered.length) {
-        container.innerHTML = `<div class="empty-state"><div class="e-icon">💬</div><h3>Bildirim Bulunamadı</h3><p>Seçilen filtrelere uygun kayıt yok</p></div>`;
-        return;
-    }
-    container.innerHTML = filtered.map(f => {
-        const isComplaint = f.type === 'complaint';
-        const statusMap = { open:{label:'Açık',color:'#ef4444',icon:'🔴'}, inprogress:{label:'İşlemde',color:'#f59e0b',icon:'🟡'}, resolved:{label:'Çözüldü',color:'#10b981',icon:'🟢'} };
-        const st = statusMap[f.status] || statusMap.open;
-        const created = new Date(f.created_at).toLocaleString('tr-TR');
-        const resolvedAt = f.resolved_at ? new Date(f.resolved_at).toLocaleString('tr-TR') : null;
-        let duration = '';
-        if (f.resolved_at && f.created_at) {
-            const mins = Math.round((new Date(f.resolved_at) - new Date(f.created_at)) / 60000);
-            duration = mins < 60 ? `${mins} dk` : `${Math.floor(mins/60)}s ${mins%60}dk`;
-        }
-        return `<div style="background:white;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);border-left:4px solid ${isComplaint?'#ef4444':'#10b981'}">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
-                <div style="display:flex;gap:12px;align-items:center">
-                    <span style="font-size:22px">${isComplaint?'🔴':'⭐'}</span>
-                    <div>
-                        <div style="font-weight:700;font-size:16px;color:#222">${isComplaint?'Şikayet':'Olumlu Bildirim'}${f.room_number?' — Oda '+f.room_number:''}</div>
-                        <div style="font-size:13px;color:#888;margin-top:2px">${f.guest_name||'Misafir belirtilmedi'} · ${f.department} · ${created}</div>
-                    </div>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                    <span style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${st.color}20;color:${st.color}">${st.icon} ${st.label}</span>
-                    ${duration?`<span style="padding:5px 12px;border-radius:20px;font-size:12px;background:#f0f0f0;color:#666">⏱ ${duration}</span>`:''}
-                    <button onclick="editFeedback('${f.id}')" style="padding:6px 12px;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px">✏️ Düzenle</button>
-                    <button onclick="deleteFeedback('${f.id}')" style="padding:6px 12px;background:#fee2e2;color:#ef4444;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
-                </div>
-            </div>
-            <div style="margin-top:14px;padding:14px;background:#f8f9ff;border-radius:8px;font-size:14px;color:#444;line-height:1.6">${f.description}</div>
-            ${f.assigned_to?`<div style="margin-top:10px;font-size:13px;color:#666">👤 Sorumlu: <strong>${f.assigned_to}</strong></div>`:''}
-            ${resolvedAt?`<div style="margin-top:4px;font-size:13px;color:#10b981">✅ Çözüm: ${resolvedAt}</div>`:''}
-        </div>`;
-    }).join('');
-}
-
 window.openFeedbackModal = function() {
     document.getElementById('fbEditId').value = '';
     document.getElementById('feedbackModalTitle').textContent = '➕ Yeni Bildirim';
@@ -4212,6 +4238,244 @@ function renderFbReport() {
     }).join('');
     // Legend
     document.querySelector('#fbrTrendWrap h3').innerHTML = '📈 Bildirim Trendi &nbsp;<span style="font-size:12px;font-weight:400"><span style="color:#ef4444">■</span> Şikayet &nbsp;<span style="color:#10b981">■</span> Olumlu</span>';
+}
+
+
+window.printFbReport = function() {
+    // Tüm sayfalası gizle, sadece fb-reports göster (print CSS halleder)
+    // Rapor henüz oluşturulmadıysa önce oluştur
+    const summary = document.getElementById('fbrSummary');
+    if (!summary || summary.innerHTML.trim() === '') {
+        renderFbReport();
+    }
+    // Otel adını başlığa ekle
+    const header = document.querySelector('#fb-reports .page-header p');
+    const startVal = document.getElementById('fbrStart').value;
+    const endVal = document.getElementById('fbrEnd').value;
+    if (header && startVal && endVal) {
+        const s = new Date(startVal).toLocaleDateString('tr-TR');
+        const e = new Date(endVal).toLocaleDateString('tr-TR');
+        header.textContent = `${s} — ${e} tarihleri arası bildirim raporu`;
+    }
+    window.print();
+}
+
+
+// ============================================
+// GELİŞTİRME 1: DASHBOARD GERİ BİLDİRİM ÖZETİ
+// ============================================
+function updateDashboardFeedback() {
+    if (!allFeedback) return;
+    const open = allFeedback.filter(f => f.type === 'complaint' && f.status === 'open');
+    const now = Date.now();
+    const urgent = open.filter(f => (now - new Date(f.created_at).getTime()) > 2 * 60 * 60 * 1000);
+    const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setEl('d-fb-open', open.length);
+    setEl('d-fb-urgent', urgent.length);
+    // Urgent kartını kırmızıya çevir
+    const urgentCard = document.getElementById('d-fb-urgent')?.closest('.stat-card');
+    if (urgentCard) {
+        urgentCard.classList.toggle('danger', urgent.length > 0);
+        urgentCard.style.animation = urgent.length > 0 ? 'urgentBlink 1.4s ease-in-out infinite' : '';
+    }
+}
+
+// ============================================
+// GELİŞTİRME 2: UYARI ANİMASYONU - renderFeedback güncelle
+// ============================================
+const _origRenderFeedback = window.renderFeedback || null;
+
+function renderFeedback() {
+    const typeFilter = document.getElementById('fbFilterType')?.value || 'all';
+    const statusFilter = document.getElementById('fbFilterStatus')?.value || 'all';
+    const deptFilter = document.getElementById('fbFilterDept')?.value || 'all';
+    const now = Date.now();
+
+    let filtered = allFeedback.filter(f => {
+        if (typeFilter !== 'all' && f.type !== typeFilter) return false;
+        if (statusFilter !== 'all' && f.status !== statusFilter) return false;
+        if (deptFilter !== 'all' && f.department !== deptFilter) return false;
+        return true;
+    });
+
+    const container = document.getElementById('feedbackList');
+    if (!container) return;
+    if (!filtered.length) {
+        container.innerHTML = `<div class="empty-state"><div class="e-icon">💬</div><h3>Bildirim Bulunamadı</h3><p>Seçilen filtrelere uygun kayıt yok</p></div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(f => {
+        const isComplaint = f.type === 'complaint';
+        const statusMap = {
+            open: { label:'Açık', color:'#ef4444', icon:'🔴' },
+            inprogress: { label:'İşlemde', color:'#f59e0b', icon:'🟡' },
+            resolved: { label:'Çözüldü', color:'#10b981', icon:'🟢' }
+        };
+        const st = statusMap[f.status] || statusMap.open;
+        const created = new Date(f.created_at).toLocaleString('tr-TR');
+        const resolvedAt = f.resolved_at ? new Date(f.resolved_at).toLocaleString('tr-TR') : null;
+        let duration = '';
+        if (f.resolved_at && f.created_at) {
+            const mins = Math.round((new Date(f.resolved_at) - new Date(f.created_at)) / 60000);
+            duration = mins < 60 ? `${mins} dk` : `${Math.floor(mins/60)}s ${mins%60}dk`;
+        }
+        // Aciliyet kontrolü: şikayet + açık + 2 saatten fazla
+        const ageMs = now - new Date(f.created_at).getTime();
+        const isUrgent = isComplaint && f.status === 'open' && ageMs > 2 * 60 * 60 * 1000;
+        const urgentHours = Math.floor(ageMs / 3600000);
+
+        // Notlar
+        const notes = f.notes ? JSON.parse(f.notes) : [];
+        const noteCount = notes.length;
+
+        return `<div class="${isUrgent ? 'fb-urgent' : ''}" style="background:white;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);border-left:4px solid ${isComplaint?'#ef4444':'#10b981'}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+                <div style="display:flex;gap:12px;align-items:center">
+                    <span style="font-size:22px">${isComplaint?'🔴':'⭐'}</span>
+                    <div>
+                        <div style="font-weight:700;font-size:16px;color:#222">
+                            ${isComplaint?'Şikayet':'Olumlu Bildirim'}${f.room_number?' — Oda '+f.room_number:''}
+                            ${isUrgent ? `<span class="fb-urgent-badge">⚠️ ${urgentHours} saattir açık</span>` : ''}
+                        </div>
+                        <div style="font-size:13px;color:#888;margin-top:2px">${f.guest_name||'Misafir belirtilmedi'} · ${f.department} · ${created}</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <span style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${st.color}20;color:${st.color}">${st.icon} ${st.label}</span>
+                    ${duration?`<span style="padding:5px 12px;border-radius:20px;font-size:12px;background:#f0f0f0;color:#666">⏱ ${duration}</span>`:''}
+                    <button onclick="openFbNoteModal('${f.id}')" style="padding:6px 12px;background:#f0f4ff;color:#667eea;border:1px solid #c7d2fe;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">
+                        📝 Notlar${noteCount>0?` (${noteCount})`:''}
+                    </button>
+                    <button onclick="editFeedback('${f.id}')" style="padding:6px 12px;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px">✏️ Düzenle</button>
+                    <button onclick="deleteFeedback('${f.id}')" style="padding:6px 12px;background:#fee2e2;color:#ef4444;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
+                </div>
+            </div>
+            <div style="margin-top:14px;padding:14px;background:#f8f9ff;border-radius:8px;font-size:14px;color:#444;line-height:1.6">${f.description}</div>
+            ${f.assigned_to?`<div style="margin-top:10px;font-size:13px;color:#666">👤 Sorumlu: <strong>${f.assigned_to}</strong></div>`:''}
+            ${resolvedAt?`<div style="margin-top:4px;font-size:13px;color:#10b981">✅ Çözüm: ${resolvedAt}</div>`:''}
+            ${noteCount>0?`<div style="margin-top:10px;padding:10px 14px;background:#fef9ec;border-radius:8px;border-left:3px solid #f59e0b;font-size:13px;color:#666">
+                📝 <strong>Son not:</strong> ${notes[notes.length-1].text} <span style="color:#aaa">(${notes[notes.length-1].by}, ${new Date(notes[notes.length-1].at).toLocaleString('tr-TR')})</span>
+            </div>`:''}
+        </div>`;
+    }).join('');
+}
+
+// ============================================
+// GELİŞTİRME 3: İÇ NOT YÖNETİMİ
+// ============================================
+let _fbNoteCurrentId = null;
+
+window.openFbNoteModal = function(id) {
+    _fbNoteCurrentId = id;
+    const f = allFeedback.find(x => x.id == id);
+    if (!f) return;
+    const notes = f.notes ? JSON.parse(f.notes) : [];
+    const listEl = document.getElementById('fbNotesList');
+    listEl.innerHTML = notes.length === 0
+        ? '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Henüz not yok</div>'
+        : notes.map(n => `
+            <div style="background:#f8f9ff;border-radius:8px;padding:12px 14px">
+                <div style="font-size:13px;color:#333;line-height:1.5">${n.text}</div>
+                <div style="font-size:11px;color:#aaa;margin-top:6px">👤 ${n.by} · ${new Date(n.at).toLocaleString('tr-TR')}</div>
+            </div>`).join('');
+    document.getElementById('fbNoteText').value = '';
+    document.getElementById('fbNoteModal').style.display = 'flex';
+}
+
+window.closeFbNoteModal = function() {
+    document.getElementById('fbNoteModal').style.display = 'none';
+    _fbNoteCurrentId = null;
+}
+
+window.saveFbNote = async function() {
+    const text = document.getElementById('fbNoteText').value.trim();
+    if (!text) { alert('⚠️ Not boş olamaz!'); return; }
+    const f = allFeedback.find(x => x.id == _fbNoteCurrentId);
+    if (!f) return;
+    const notes = f.notes ? JSON.parse(f.notes) : [];
+    notes.push({ text, by: curUser.username, at: new Date().toISOString() });
+    try {
+        const { error } = await supabase.from('feedback').update({ notes: JSON.stringify(notes) }).eq('id', f.id);
+        if (error) throw error;
+        f.notes = JSON.stringify(notes);
+        // Modalı güncelle
+        openFbNoteModal(f.id);
+        renderFeedback();
+    } catch(e) { alert('❌ Kaydedilemedi: ' + e.message); }
+}
+
+// ============================================
+// GELİŞTİRME 4: ANKETTEN ŞİKAYETE DÖNÜŞTÜR
+// ============================================
+window.openFbConvertModal = function() {
+    const listEl = document.getElementById('fbConvertList');
+    // ≤2 yıldız olan anketler
+    const lowSurveys = allSurveys.filter(s =>
+        DEPTS.some(d => { const r = getRating(s, d.key); return r > 0 && r <= 2; })
+    );
+    if (!lowSurveys.length) {
+        listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">Düşük puanlı anket bulunamadı</div>';
+    } else {
+        listEl.innerHTML = lowSurveys.map(s => {
+            const lowDepts = DEPTS.filter(d => { const r = getRating(s, d.key); return r > 0 && r <= 2; });
+            const date = new Date(s.created_at).toLocaleDateString('tr-TR');
+            return `<div style="background:#fff5f5;border-radius:10px;padding:14px;border:1px solid #fecaca">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                    <div>
+                        <div style="font-weight:600;font-size:14px">Oda ${s.room_number||'?'} · ${date}</div>
+                        <div style="font-size:12px;color:#ef4444;margin-top:4px">
+                            ${lowDepts.map(d => `${d.icon} ${d.name}: ⭐${getRating(s,d.key)}`).join(' · ')}
+                        </div>
+                        ${s.comments ? `<div style="font-size:12px;color:#666;margin-top:6px;font-style:italic">"${s.comments}"</div>` : ''}
+                    </div>
+                    <button onclick="convertSurveyToFeedback('${s.id}')"
+                        style="padding:7px 14px;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap">
+                        ➕ Aktar
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    document.getElementById('fbConvertModal').style.display = 'flex';
+}
+
+window.closeFbConvertModal = function() {
+    document.getElementById('fbConvertModal').style.display = 'none';
+}
+
+window.convertSurveyToFeedback = async function(surveyId) {
+    const s = allSurveys.find(x => x.id == surveyId);
+    if (!s) return;
+    const lowDepts = DEPTS.filter(d => { const r = getRating(s, d.key); return r > 0 && r <= 2; });
+    const deptName = lowDepts.length > 0 ? lowDepts[0].name : 'Genel';
+    const desc = [
+        `Anket kaynaklı şikayet (${new Date(s.created_at).toLocaleDateString('tr-TR')})`,
+        lowDepts.map(d => `${d.name}: ${getRating(s,d.key)} yıldız`).join(', '),
+        s.comments ? `Misafir notu: "${s.comments}"` : ''
+    ].filter(Boolean).join('\n');
+
+    try {
+        const { error } = await supabase.from('feedback').insert([{
+            type: 'complaint',
+            department: deptName,
+            description: desc,
+            room_number: s.room_number || null,
+            guest_name: null,
+            assigned_to: null,
+            status: 'open',
+            created_at: new Date().toISOString(),
+            created_by: curUser.username,
+            updated_at: new Date().toISOString(),
+            updated_by: curUser.username
+        }]);
+        if (error) throw error;
+        // Butonu disabled yap
+        event.target.textContent = '✅ Aktarıldı';
+        event.target.disabled = true;
+        event.target.style.background = '#10b981';
+        await loadFeedback();
+    } catch(e) { alert('❌ Aktarılamadı: ' + e.message); }
 }
 
 </script>
