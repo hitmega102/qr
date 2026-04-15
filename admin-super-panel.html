@@ -1395,6 +1395,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea}
 <div class="menu-item" data-page="feedback" onclick="nav(this,'feedback')"><span class="icon">💬</span><span>Geri Bildirim</span></div>
 <div class="menu-item" data-page="fb-reports" onclick="nav(this,'fb-reports')"><span class="icon">📊</span><span>Bildirim Raporu</span></div>
 <div class="menu-item" data-page="ai-analyses" onclick="nav(this,'ai-analyses')"><span class="icon">🤖</span><span>AI Analizler</span></div>
+<div class="menu-item" data-page="alacarte" onclick="nav(this,'alacarte')"><span class="icon">🍽️</span><span>À la Carte</span></div>
 <div class="menu-item" data-page="form-manager" onclick="nav(this,'form-manager')"><span class="icon">📝</span><span>Form Yönetimi</span></div>
 <div class="menu-item" data-page="settings" onclick="nav(this,'settings')"><span class="icon">⚙️</span><span>Ayarlar</span></div>
 <div class="menu-item" data-page="users" onclick="nav(this,'users')"><span class="icon">👥</span><span>Kullanıcılar</span></div>
@@ -1772,6 +1773,242 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
 </div>
 
 
+
+
+<!-- ============ À LA CARTE SAYFASI ============ -->
+<div id="alacarte" class="page">
+<div class="page-header"><h2>🍽️ À la Carte</h2><p>Rezervasyon, sipariş ve fiş yönetimi</p></div>
+
+<!-- Tab bar -->
+<div style="display:flex;gap:4px;margin-bottom:22px;background:#f0f0f0;padding:4px;border-radius:10px;width:fit-content">
+  <button onclick="acTab('reservations')" id="acTabReservations" style="padding:9px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:white;color:#333;box-shadow:0 1px 4px rgba(0,0,0,.1)">📅 Rezervasyonlar</button>
+  <button onclick="acTab('order')" id="acTabOrder" style="padding:9px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#666">🛒 Sipariş Al</button>
+  <button onclick="acTab('orders')" id="acTabOrders" style="padding:9px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#666">📋 Siparişler</button>
+  <button onclick="acTab('menu')" id="acTabMenu" style="padding:9px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#666">🍴 Menü Yönetimi</button>
+  <button onclick="acTab('printer')" id="acTabPrinter" style="padding:9px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#666">🖨️ Yazıcı</button>
+</div>
+
+<!-- REZERVASYONLAR -->
+<div id="acPanelReservations">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input type="date" id="acResDate" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+      <select id="acResRestaurant" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;min-width:160px">
+        <option value="">Tüm Restoranlar</option>
+      </select>
+      <button onclick="loadReservations()" style="padding:9px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer">🔍 Getir</button>
+    </div>
+    <button onclick="openResModal()" style="padding:9px 20px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">➕ Yeni Rezervasyon</button>
+  </div>
+  <div id="acResList" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
+<!-- SİPARİŞ AL -->
+<div id="acPanelOrder" style="display:none">
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+    <!-- Sol: Menü -->
+    <div style="flex:2;min-width:300px">
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <select id="acOrderRestaurant" onchange="loadMenuForOrder()" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;flex:1;min-width:160px">
+          <option value="">Restoran Seçin</option>
+        </select>
+        <input type="text" id="acOrderTable" placeholder="Masa / Oda No" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;width:140px">
+      </div>
+      <div id="acMenuCategories" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
+      <div id="acMenuItems" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
+    </div>
+    <!-- Sağ: Sepet -->
+    <div style="flex:1;min-width:260px;position:sticky;top:20px">
+      <div style="background:white;border-radius:14px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.1)">
+        <h3 style="font-size:16px;color:#333;margin-bottom:14px">🛒 Sipariş</h3>
+        <div id="acCart" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+        <div id="acCartEmpty" style="text-align:center;padding:20px;color:#aaa;font-size:13px">Henüz ürün eklenmedi</div>
+        <div style="border-top:2px solid #f0f0f0;padding-top:12px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px">
+            <span>Toplam</span><span id="acCartTotal">—</span>
+          </div>
+        </div>
+        <textarea id="acOrderNote" placeholder="Sipariş notu (alerji, tercih...)" rows="2" style="width:100%;padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;resize:none;margin-bottom:10px"></textarea>
+        <button onclick="submitOrder()" style="width:100%;padding:12px;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">✅ Siparişi Kaydet & Yazdır</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SİPARİŞLER LİSTESİ -->
+<div id="acPanelOrders" style="display:none">
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <input type="date" id="acOrdDate" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    <select id="acOrdRestaurant" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;min-width:160px">
+      <option value="">Tüm Restoranlar</option>
+    </select>
+    <select id="acOrdStatus" style="padding:9px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+      <option value="all">Tüm Durumlar</option>
+      <option value="pending">Bekliyor</option>
+      <option value="served">Servis Edildi</option>
+      <option value="cancelled">İptal</option>
+    </select>
+    <button onclick="loadOrders()" style="padding:9px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer">🔍 Getir</button>
+  </div>
+  <div id="acOrdersList" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
+<!-- MENÜ YÖNETİMİ -->
+<div id="acPanelMenu" style="display:none">
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+    <!-- Restoran seç / ekle -->
+    <div style="flex:1;min-width:240px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="font-size:15px;color:#333">🏪 Restoranlar</h3>
+        <button onclick="openRestaurantModal()" style="padding:7px 14px;background:#667eea;color:white;border:none;border-radius:7px;font-size:13px;cursor:pointer">➕ Ekle</button>
+      </div>
+      <div id="acRestaurantList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <!-- Seçili restoranın menüsü -->
+    <div style="flex:3;min-width:300px">
+      <div id="acMenuMgmtPanel" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <h3 id="acMenuMgmtTitle" style="font-size:15px;color:#333">Menü</h3>
+          <div style="display:flex;gap:8px">
+            <button onclick="openCategoryModal()" style="padding:7px 14px;background:#f59e0b;color:white;border:none;border-radius:7px;font-size:13px;cursor:pointer">📂 Kategori Ekle</button>
+            <button onclick="openMenuItemModal()" style="padding:7px 14px;background:#10b981;color:white;border:none;border-radius:7px;font-size:13px;cursor:pointer">🍴 Ürün Ekle</button>
+          </div>
+        </div>
+        <div id="acMenuMgmtList" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+      <div id="acMenuMgmtEmpty" style="text-align:center;padding:60px;color:#aaa">
+        <div style="font-size:40px;margin-bottom:10px">👈</div><p>Sol taraftan restoran seçin</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- YAZICI AYARLARI -->
+<div id="acPanelPrinter" style="display:none">
+  <div style="max-width:480px">
+    <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px">
+      <h3 style="font-size:16px;color:#333;margin-bottom:16px">🖨️ ESC/POS Yazıcı Bağlantısı</h3>
+      <p style="font-size:13px;color:#666;margin-bottom:16px;line-height:1.6">Epson, Star veya uyumlu termal yazıcınızı <strong>USB</strong> veya <strong>Serial (Bluetooth)</strong> ile bağlayın. Tarayıcının WebUSB / Web Serial API'si kullanılır — Chrome/Edge önerilir.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <button onclick="connectUSBPrinter()" style="flex:1;padding:11px;background:#667eea;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🔌 USB ile Bağlan</button>
+        <button onclick="connectSerialPrinter()" style="flex:1;padding:11px;background:#764ba2;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">📡 Serial ile Bağlan</button>
+      </div>
+      <div id="printerStatus" style="padding:10px 14px;border-radius:8px;font-size:13px;background:#f0f0f0;color:#666">⬜ Yazıcı bağlı değil</div>
+    </div>
+    <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+      <h3 style="font-size:15px;color:#333;margin-bottom:14px">🧾 Fiş Başlığı</h3>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input type="text" id="printerHeader1" placeholder="Otel / Restoran Adı" value="Noxinn Deluxe Hotel" style="padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+        <input type="text" id="printerHeader2" placeholder="Alt başlık (ör: À la Carte Restoran)" style="padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+        <input type="text" id="printerFooter" placeholder="Fiş altı mesajı (ör: Afiyet olsun!)" value="Afiyet olsun! Teşekkürler 🍽️" style="padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+        <button onclick="savePrinterSettings()" style="padding:11px;background:#10b981;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">💾 Kaydet</button>
+      </div>
+    </div>
+    <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-top:16px">
+      <h3 style="font-size:15px;color:#333;margin-bottom:14px">🧪 Test Yazdır</h3>
+      <button onclick="printTest()" style="padding:11px 22px;background:#f59e0b;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🖨️ Test Fişi Yazdır</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- REZERVASYON MODAL -->
+<div id="acResModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 id="acResModalTitle" style="font-size:18px;color:#333">📅 Yeni Rezervasyon</h3>
+    <button onclick="closeResModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <input type="hidden" id="acResEditId">
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Restoran *</label>
+      <select id="acResRestaurantSel" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></select></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Misafir Adı *</label>
+      <input id="acResGuest" type="text" placeholder="Ad Soyad" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Oda No</label>
+      <input id="acResRoom" type="text" placeholder="Ör: 215" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div style="display:flex;gap:10px">
+      <div style="flex:1"><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Tarih *</label>
+        <input id="acResDateSel" type="date" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+      <div style="flex:1"><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Saat *</label>
+        <input id="acResTime" type="time" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    </div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Kişi Sayısı</label>
+      <input id="acResPax" type="number" min="1" max="20" value="2" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Not</label>
+      <textarea id="acResNote" rows="2" placeholder="Özel istek, diyet vs." style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;resize:vertical"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button onclick="saveReservation()" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">💾 Kaydet</button>
+      <button onclick="closeResModal()" style="padding:12px 18px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer">İptal</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- RESTORAN MODAL -->
+<div id="acRestaurantModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 style="font-size:18px;color:#333">🏪 Restoran Ekle</h3>
+    <button onclick="closeRestaurantModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">İkon</label>
+      <input id="acRestIcon" type="text" value="🍽️" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Restoran Adı *</label>
+      <input id="acRestName" type="text" placeholder="Ör: Akdeniz Restoran" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button onclick="saveRestaurant()" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">💾 Kaydet</button>
+      <button onclick="closeRestaurantModal()" style="padding:12px 18px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer">İptal</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- KATEGORİ MODAL -->
+<div id="acCategoryModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 style="font-size:18px;color:#333">📂 Kategori Ekle</h3>
+    <button onclick="closeCategoryModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">İkon</label>
+      <input id="acCatIcon" type="text" value="🍴" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Kategori Adı *</label>
+      <input id="acCatName" type="text" placeholder="Ör: Başlangıçlar" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button onclick="saveCategory()" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">💾 Kaydet</button>
+      <button onclick="closeCategoryModal()" style="padding:12px 18px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer">İptal</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ÜRÜN MODAL -->
+<div id="acMenuItemModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 id="acItemModalTitle" style="font-size:18px;color:#333">🍴 Ürün Ekle</h3>
+    <button onclick="closeMenuItemModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
+  </div>
+  <input type="hidden" id="acItemEditId">
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Kategori *</label>
+      <select id="acItemCategory" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></select></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Ürün Adı *</label>
+      <input id="acItemName" type="text" placeholder="Ör: Izgara Levrek" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Açıklama</label>
+      <input id="acItemDesc" type="text" placeholder="Kısa açıklama" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Fiyat (opsiyonel)</label>
+      <input id="acItemPrice" type="number" min="0" step="0.01" placeholder="0.00" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button onclick="saveMenuItem()" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">💾 Kaydet</button>
+      <button onclick="closeMenuItemModal()" style="padding:12px 18px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer">İptal</button>
+    </div>
+  </div>
+</div>
+</div>
 
 <div id="form-manager" class="page">
 <div class="page-header"><h2>📝 Form Yönetimi</h2><p>Anket formları ve sorularını yönetin</p></div>
@@ -2154,6 +2391,7 @@ window.nav=function(el,pageId){
     if(pageId==='ai-analyses')loadAIAnalyses();
     if(pageId==='feedback')loadFeedback();
     if(pageId==='form-manager')loadFormManager();
+    if(pageId==='alacarte')initAlacarte();
     if(pageId==='fb-reports')initFbReport();
     if(pageId==='settings'){renderQuestions();loadGroqKey();loadEmailJSSettings();loadSuccessThreshold();loadEmailTemplate();}
 }
@@ -4820,6 +5058,587 @@ window.copyFormUrl = function() {
         btn.textContent = '✅ Kopyalandı!';
         setTimeout(() => btn.textContent = '📋 Kopyala', 2000);
     });
+}
+
+
+// ============================================
+// À LA CARTE MODÜLİ
+// ============================================
+
+let acRestaurants = [];
+let acCategories = [];
+let acMenuItems = [];
+let acReservations = [];
+let acOrders = [];
+let acCart = {};
+let _activeRestaurantId = null;
+let _activeCategoryFilter = 'all';
+let _printerDevice = null;
+let _printerPort = null;
+let _printerSettings = { header1: 'Noxinn Deluxe Hotel', header2: '', footer: 'Afiyet olsun! Teşekkürler 🍽️', type: null };
+
+// ── TAB YÖNETİMİ ──────────────────────────────────────────────
+window.acTab = function(tab) {
+    ['reservations','order','orders','menu','printer'].forEach(t => {
+        document.getElementById('acPanel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
+        const btn = document.getElementById('acTab'+t.charAt(0).toUpperCase()+t.slice(1));
+        if(btn){ btn.style.background=t===tab?'white':'transparent'; btn.style.color=t===tab?'#333':'#666'; btn.style.boxShadow=t===tab?'0 1px 4px rgba(0,0,0,.1)':'none'; }
+    });
+    if(tab==='reservations') loadReservations();
+    if(tab==='orders') loadOrders();
+    if(tab==='menu') loadRestaurants();
+    if(tab==='order') { populateRestaurantSelects(); if(acRestaurants.length) { document.getElementById('acOrderRestaurant').value=acRestaurants[0].id; loadMenuForOrder(); } }
+    if(tab==='printer') loadPrinterSettings();
+}
+
+window.initAlacarte = async function() {
+    await loadRestaurantsData();
+    loadPrinterSettings();
+    populateRestaurantSelects();
+    // Varsayılan tab
+    acTab('reservations');
+}
+
+// ── VERİ YÜKLEME ──────────────────────────────────────────────
+async function loadRestaurantsData() {
+    try {
+        const { data, error } = await supabase.from('ac_restaurants').select('*').order('name');
+        if (error) throw error;
+        acRestaurants = data || [];
+    } catch(e) { console.error('Restoran yükleme:', e); acRestaurants = []; }
+}
+
+function populateRestaurantSelects() {
+    const opts = '<option value="">Seçin</option>' + acRestaurants.map(r => `<option value="${r.id}">${r.icon||'🍽️'} ${r.name}</option>`).join('');
+    ['acResRestaurant','acResRestaurantSel','acOrderRestaurant','acOrdRestaurant'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.innerHTML = (id==='acResRestaurantSel'?'':('<option value="">Tüm Restoranlar</option>')) + acRestaurants.map(r=>`<option value="${r.id}">${r.icon||'🍽️'} ${r.name}</option>`).join('');
+    });
+}
+
+// ── REZERVASYONLAR ────────────────────────────────────────────
+window.loadReservations = async function() {
+    try {
+        let q = supabase.from('ac_reservations').select('*, ac_restaurants(name,icon)').order('reservation_date').order('reservation_time');
+        const dateVal = document.getElementById('acResDate')?.value;
+        const restVal = document.getElementById('acResRestaurant')?.value;
+        if (dateVal) q = q.eq('reservation_date', dateVal);
+        if (restVal) q = q.eq('restaurant_id', restVal);
+        const { data, error } = await q;
+        if (error) throw error;
+        acReservations = data || [];
+        renderReservations();
+    } catch(e) { console.error('Rezervasyon yükleme:', e); }
+}
+
+function renderReservations() {
+    const el = document.getElementById('acResList');
+    if (!acReservations.length) { el.innerHTML='<div class="empty-state"><div class="e-icon">📅</div><h3>Rezervasyon Yok</h3><p>Seçilen tarih için rezervasyon bulunamadı</p></div>'; return; }
+    el.innerHTML = acReservations.map(r => {
+        const rest = r.ac_restaurants;
+        const statusMap = { confirmed:{label:'Onaylı',color:'#10b981'}, pending:{label:'Bekliyor',color:'#f59e0b'}, cancelled:{label:'İptal',color:'#ef4444'}, arrived:{label:'Geldi',color:'#667eea'} };
+        const st = statusMap[r.status||'confirmed'] || statusMap.confirmed;
+        return `<div style="background:white;border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div style="display:flex;gap:14px;align-items:center">
+                <span style="font-size:28px">${rest?.icon||'🍽️'}</span>
+                <div>
+                    <div style="font-weight:700;font-size:15px;color:#222">${r.guest_name} ${r.room_number?'· Oda '+r.room_number:''}</div>
+                    <div style="font-size:13px;color:#888;margin-top:2px">${rest?.name||''} · ${r.reservation_date} ${r.reservation_time?.slice(0,5)||''} · ${r.pax||2} kişi</div>
+                    ${r.notes?`<div style="font-size:12px;color:#aaa;margin-top:3px;font-style:italic">"${r.notes}"</div>`:''}
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <span style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${st.color}20;color:${st.color}">${st.label}</span>
+                <select onchange="updateResStatus('${r.id}',this.value)" style="padding:6px 10px;border:1px solid #e0e0e0;border-radius:6px;font-size:12px">
+                    <option value="confirmed" ${r.status==='confirmed'?'selected':''}>Onaylı</option>
+                    <option value="pending" ${r.status==='pending'?'selected':''}>Bekliyor</option>
+                    <option value="arrived" ${r.status==='arrived'?'selected':''}>Geldi</option>
+                    <option value="cancelled" ${r.status==='cancelled'?'selected':''}>İptal</option>
+                </select>
+                <button onclick="editReservation('${r.id}')" style="padding:6px 12px;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px">✏️</button>
+                <button onclick="deleteReservation('${r.id}')" style="padding:6px 12px;background:#fee2e2;color:#ef4444;border:none;border-radius:6px;cursor:pointer;font-size:12px">🗑</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.openResModal = function() {
+    document.getElementById('acResEditId').value='';
+    document.getElementById('acResModalTitle').textContent='📅 Yeni Rezervasyon';
+    document.getElementById('acResGuest').value='';
+    document.getElementById('acResRoom').value='';
+    document.getElementById('acResDateSel').valueAsDate=new Date();
+    document.getElementById('acResTime').value='19:00';
+    document.getElementById('acResPax').value='2';
+    document.getElementById('acResNote').value='';
+    const sel=document.getElementById('acResRestaurantSel');
+    sel.innerHTML=acRestaurants.map(r=>`<option value="${r.id}">${r.icon||'🍽️'} ${r.name}</option>`).join('');
+    document.getElementById('acResModal').style.display='flex';
+}
+window.closeResModal=function(){document.getElementById('acResModal').style.display='none';}
+
+window.editReservation = function(id) {
+    const r = acReservations.find(x=>x.id===id); if(!r)return;
+    document.getElementById('acResEditId').value=r.id;
+    document.getElementById('acResModalTitle').textContent='✏️ Rezervasyon Düzenle';
+    document.getElementById('acResGuest').value=r.guest_name||'';
+    document.getElementById('acResRoom').value=r.room_number||'';
+    document.getElementById('acResDateSel').value=r.reservation_date||'';
+    document.getElementById('acResTime').value=r.reservation_time?.slice(0,5)||'';
+    document.getElementById('acResPax').value=r.pax||2;
+    document.getElementById('acResNote').value=r.notes||'';
+    const sel=document.getElementById('acResRestaurantSel');
+    sel.innerHTML=acRestaurants.map(r2=>`<option value="${r2.id}" ${r2.id===r.restaurant_id?'selected':''}>${r2.icon||'🍽️'} ${r2.name}</option>`).join('');
+    document.getElementById('acResModal').style.display='flex';
+}
+
+window.saveReservation = async function() {
+    const id=document.getElementById('acResEditId').value;
+    const guest=document.getElementById('acResGuest').value.trim();
+    const restaurant=document.getElementById('acResRestaurantSel').value;
+    const date=document.getElementById('acResDateSel').value;
+    const time=document.getElementById('acResTime').value;
+    if(!guest||!restaurant||!date||!time){alert('⚠️ Zorunlu alanları doldurun!');return;}
+    const payload={guest_name:guest,restaurant_id:restaurant,reservation_date:date,reservation_time:time,pax:parseInt(document.getElementById('acResPax').value)||2,room_number:document.getElementById('acResRoom').value.trim()||null,notes:document.getElementById('acResNote').value.trim()||null,status:'confirmed',updated_at:new Date().toISOString()};
+    try {
+        let error;
+        if(id){({error}=await supabase.from('ac_reservations').update(payload).eq('id',id));}
+        else{payload.created_at=new Date().toISOString();({error}=await supabase.from('ac_reservations').insert([payload]));}
+        if(error)throw error;
+        closeResModal(); loadReservations();
+    }catch(e){alert('❌ Kaydedilemedi: '+e.message);}
+}
+
+window.updateResStatus = async function(id,status) {
+    await supabase.from('ac_reservations').update({status,updated_at:new Date().toISOString()}).eq('id',id);
+}
+window.deleteReservation = async function(id) {
+    if(!confirm('Rezervasyonu silmek istediğinizden emin misiniz?'))return;
+    await supabase.from('ac_reservations').delete().eq('id',id);
+    loadReservations();
+}
+
+// ── MENÜ YÖNETİMİ ─────────────────────────────────────────────
+window.loadRestaurants = async function() {
+    await loadRestaurantsData();
+    populateRestaurantSelects();
+    const el=document.getElementById('acRestaurantList');
+    if(!acRestaurants.length){el.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">Henüz restoran yok</div>';return;}
+    el.innerHTML=acRestaurants.map(r=>`<div onclick="selectRestaurant('${r.id}')" style="padding:13px 16px;border-radius:10px;border:2px solid ${_activeRestaurantId===r.id?'#667eea':'#e0e0e0'};background:${_activeRestaurantId===r.id?'#f0f4ff':'white'};cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:10px;align-items:center"><span style="font-size:20px">${r.icon||'🍽️'}</span><span style="font-weight:600;font-size:14px;color:${_activeRestaurantId===r.id?'#667eea':'#222'}">${r.name}</span></div>
+        <button onclick="event.stopPropagation();deleteRestaurant('${r.id}')" style="padding:4px 9px;background:#fee2e2;color:#ef4444;border:none;border-radius:5px;cursor:pointer;font-size:11px">🗑</button>
+    </div>`).join('');
+}
+
+window.selectRestaurant = async function(id) {
+    _activeRestaurantId=id;
+    const rest=acRestaurants.find(r=>r.id===id);
+    document.getElementById('acMenuMgmtEmpty').style.display='none';
+    document.getElementById('acMenuMgmtPanel').style.display='block';
+    document.getElementById('acMenuMgmtTitle').textContent=`${rest?.icon||'🍽️'} ${rest?.name} — Menü`;
+    await loadMenuData(id);
+    renderMenuMgmt();
+    loadRestaurants();
+}
+
+async function loadMenuData(restaurantId) {
+    const[catRes,itemRes]=await Promise.all([
+        supabase.from('ac_categories').select('*').eq('restaurant_id',restaurantId).order('sort_order'),
+        supabase.from('ac_menu_items').select('*').eq('restaurant_id',restaurantId).eq('is_active',true).order('category_id').order('name')
+    ]);
+    acCategories=catRes.data||[];
+    acMenuItems=itemRes.data||[];
+}
+
+function renderMenuMgmt() {
+    const el=document.getElementById('acMenuMgmtList');
+    if(!acCategories.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;background:#f8f9ff;border-radius:10px">Henüz kategori yok. 📂 Kategori Ekle butonunu kullanın.</div>';return;}
+    el.innerHTML=acCategories.map(cat=>{
+        const items=acMenuItems.filter(i=>i.category_id===cat.id);
+        return`<div style="background:white;border-radius:12px;border:1px solid #e0e0e0;overflow:hidden;margin-bottom:4px">
+            <div style="padding:12px 16px;background:#f8f9ff;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-weight:700;font-size:14px">${cat.icon||'📂'} ${cat.name} <span style="font-weight:400;color:#aaa;font-size:12px">(${items.length} ürün)</span></span>
+                <button onclick="deleteCategory('${cat.id}')" style="padding:4px 9px;background:#fee2e2;color:#ef4444;border:none;border-radius:5px;cursor:pointer;font-size:11px">🗑</button>
+            </div>
+            ${items.length?items.map(i=>`<div style="padding:11px 16px;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
+                <div><span style="font-size:14px;font-weight:600;color:#333">${i.name}</span>${i.description?`<span style="font-size:12px;color:#aaa;margin-left:8px">${i.description}</span>`:''}</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                    ${i.price?`<span style="font-size:13px;font-weight:600;color:#667eea">${parseFloat(i.price).toFixed(2)}</span>`:''}
+                    <button onclick="editMenuItem('${i.id}')" style="padding:4px 9px;background:#e0e7ff;color:#667eea;border:none;border-radius:5px;cursor:pointer;font-size:11px">✏️</button>
+                    <button onclick="deleteMenuItem('${i.id}')" style="padding:4px 9px;background:#fee2e2;color:#ef4444;border:none;border-radius:5px;cursor:pointer;font-size:11px">🗑</button>
+                </div>
+            </div>`).join(''):'<div style="padding:11px 16px;font-size:13px;color:#aaa;border-top:1px solid #f0f0f0">Bu kategoride ürün yok</div>'}
+        </div>`;
+    }).join('');
+}
+
+window.openRestaurantModal=function(){document.getElementById('acRestIcon').value='🍽️';document.getElementById('acRestName').value='';document.getElementById('acRestaurantModal').style.display='flex';}
+window.closeRestaurantModal=function(){document.getElementById('acRestaurantModal').style.display='none';}
+window.saveRestaurant=async function(){
+    const name=document.getElementById('acRestName').value.trim();
+    const icon=document.getElementById('acRestIcon').value.trim()||'🍽️';
+    if(!name){alert('⚠️ Restoran adı zorunlu!');return;}
+    try{const{error}=await supabase.from('ac_restaurants').insert([{name,icon,created_at:new Date().toISOString()}]);if(error)throw error;closeRestaurantModal();await loadRestaurantsData();populateRestaurantSelects();loadRestaurants();}
+    catch(e){alert('❌ '+e.message);}
+}
+window.deleteRestaurant=async function(id){
+    if(!confirm('Restoran ve tüm menüsü silinecek. Emin misiniz?'))return;
+    await Promise.all([supabase.from('ac_menu_items').delete().eq('restaurant_id',id),supabase.from('ac_categories').delete().eq('restaurant_id',id)]);
+    await supabase.from('ac_restaurants').delete().eq('id',id);
+    if(_activeRestaurantId===id){_activeRestaurantId=null;document.getElementById('acMenuMgmtPanel').style.display='none';document.getElementById('acMenuMgmtEmpty').style.display='block';}
+    await loadRestaurantsData();populateRestaurantSelects();loadRestaurants();
+}
+
+window.openCategoryModal=function(){document.getElementById('acCatIcon').value='🍴';document.getElementById('acCatName').value='';document.getElementById('acCategoryModal').style.display='flex';}
+window.closeCategoryModal=function(){document.getElementById('acCategoryModal').style.display='none';}
+window.saveCategory=async function(){
+    const name=document.getElementById('acCatName').value.trim();
+    const icon=document.getElementById('acCatIcon').value.trim()||'🍴';
+    if(!name||!_activeRestaurantId){alert('⚠️ Kategori adı zorunlu!');return;}
+    try{const{error}=await supabase.from('ac_categories').insert([{name,icon,restaurant_id:_activeRestaurantId,sort_order:acCategories.length+1}]);if(error)throw error;closeCategoryModal();await loadMenuData(_activeRestaurantId);renderMenuMgmt();}
+    catch(e){alert('❌ '+e.message);}
+}
+window.deleteCategory=async function(id){
+    if(!confirm('Kategoriyi ve içindeki ürünleri silmek istediğinizden emin misiniz?'))return;
+    await supabase.from('ac_menu_items').delete().eq('category_id',id);
+    await supabase.from('ac_categories').delete().eq('id',id);
+    await loadMenuData(_activeRestaurantId);renderMenuMgmt();
+}
+
+window.openMenuItemModal=function(){
+    document.getElementById('acItemEditId').value='';
+    document.getElementById('acItemModalTitle').textContent='🍴 Ürün Ekle';
+    document.getElementById('acItemName').value='';
+    document.getElementById('acItemDesc').value='';
+    document.getElementById('acItemPrice').value='';
+    document.getElementById('acItemCategory').innerHTML=acCategories.map(c=>`<option value="${c.id}">${c.icon||'📂'} ${c.name}</option>`).join('');
+    document.getElementById('acMenuItemModal').style.display='flex';
+}
+window.closeMenuItemModal=function(){document.getElementById('acMenuItemModal').style.display='none';}
+window.editMenuItem=function(id){
+    const i=acMenuItems.find(x=>x.id===id);if(!i)return;
+    document.getElementById('acItemEditId').value=i.id;
+    document.getElementById('acItemModalTitle').textContent='✏️ Ürün Düzenle';
+    document.getElementById('acItemName').value=i.name||'';
+    document.getElementById('acItemDesc').value=i.description||'';
+    document.getElementById('acItemPrice').value=i.price||'';
+    document.getElementById('acItemCategory').innerHTML=acCategories.map(c=>`<option value="${c.id}" ${c.id===i.category_id?'selected':''}>${c.icon||'📂'} ${c.name}</option>`).join('');
+    document.getElementById('acMenuItemModal').style.display='flex';
+}
+window.saveMenuItem=async function(){
+    const id=document.getElementById('acItemEditId').value;
+    const name=document.getElementById('acItemName').value.trim();
+    const catId=document.getElementById('acItemCategory').value;
+    if(!name||!catId){alert('⚠️ Ürün adı ve kategori zorunlu!');return;}
+    const payload={name,category_id:catId,restaurant_id:_activeRestaurantId,description:document.getElementById('acItemDesc').value.trim()||null,price:parseFloat(document.getElementById('acItemPrice').value)||null,is_active:true};
+    try{let error;if(id){({error}=await supabase.from('ac_menu_items').update(payload).eq('id',id));}else{payload.created_at=new Date().toISOString();({error}=await supabase.from('ac_menu_items').insert([payload]));}if(error)throw error;closeMenuItemModal();await loadMenuData(_activeRestaurantId);renderMenuMgmt();}
+    catch(e){alert('❌ '+e.message);}
+}
+window.deleteMenuItem=async function(id){
+    if(!confirm('Ürünü silmek istediğinizden emin misiniz?'))return;
+    await supabase.from('ac_menu_items').delete().eq('id',id);
+    await loadMenuData(_activeRestaurantId);renderMenuMgmt();
+}
+
+// ── SİPARİŞ ALMA ──────────────────────────────────────────────
+window.loadMenuForOrder = async function() {
+    const restId=document.getElementById('acOrderRestaurant').value;
+    if(!restId)return;
+    acCart={};
+    _activeCategoryFilter='all';
+    await loadMenuData(restId);
+    renderMenuCategories();renderMenuItemsForOrder();renderCart();
+}
+
+function renderMenuCategories(){
+    const el=document.getElementById('acMenuCategories');
+    el.innerHTML=`<button onclick="filterMenuCat('all')" style="padding:7px 14px;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;background:${_activeCategoryFilter==='all'?'#667eea':'#f0f0f0'};color:${_activeCategoryFilter==='all'?'white':'#555'}">Tümü</button>`+
+    acCategories.map(c=>`<button onclick="filterMenuCat('${c.id}')" style="padding:7px 14px;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;background:${_activeCategoryFilter===c.id?'#667eea':'#f0f0f0'};color:${_activeCategoryFilter===c.id?'white':'#555'}">${c.icon||''} ${c.name}</button>`).join('');
+}
+window.filterMenuCat=function(id){_activeCategoryFilter=id;renderMenuCategories();renderMenuItemsForOrder();}
+
+function renderMenuItemsForOrder(){
+    const el=document.getElementById('acMenuItems');
+    const items=_activeCategoryFilter==='all'?acMenuItems:acMenuItems.filter(i=>i.category_id===_activeCategoryFilter);
+    if(!items.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:#aaa">Bu kategoride ürün yok</div>';return;}
+    el.innerHTML=items.map(i=>{
+        const qty=acCart[i.id]?.qty||0;
+        return`<div style="background:white;border-radius:10px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2px solid ${qty>0?'#667eea':'transparent'}">
+            <div style="font-weight:700;font-size:14px;color:#222;margin-bottom:4px">${i.name}</div>
+            ${i.description?`<div style="font-size:12px;color:#aaa;margin-bottom:8px">${i.description}</div>`:''}
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                <span style="font-size:14px;font-weight:700;color:#667eea">${i.price?parseFloat(i.price).toFixed(2):''}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                    ${qty>0?`<button onclick="cartQty('${i.id}',-1)" style="width:28px;height:28px;border:none;background:#fee2e2;color:#ef4444;border-radius:50%;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center">−</button>
+                    <span style="font-weight:700;min-width:20px;text-align:center">${qty}</span>`:''}
+                    <button onclick="cartQty('${i.id}',1,'${i.name.replace(/'/g,'\\\'')}'${i.price?','+i.price:''})" style="width:28px;height:28px;border:none;background:#667eea;color:white;border-radius:50%;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center">+</button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.cartQty=function(id,delta,name,price){
+    if(!acCart[id])acCart[id]={qty:0,name:name||'?',price:parseFloat(price)||0};
+    acCart[id].qty=Math.max(0,acCart[id].qty+delta);
+    if(acCart[id].qty===0)delete acCart[id];
+    renderMenuItemsForOrder();renderCart();
+}
+
+function renderCart(){
+    const items=Object.entries(acCart);
+    const cartEl=document.getElementById('acCart');
+    const emptyEl=document.getElementById('acCartEmpty');
+    if(!items.length){cartEl.innerHTML='';emptyEl.style.display='block';document.getElementById('acCartTotal').textContent='—';return;}
+    emptyEl.style.display='none';
+    let total=0;
+    cartEl.innerHTML=items.map(([id,item])=>{
+        const sub=item.price?item.qty*item.price:0;
+        total+=sub;
+        return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0">
+            <div><div style="font-size:13px;font-weight:600">${item.name}</div><div style="font-size:12px;color:#aaa">x${item.qty}${item.price?' · '+sub.toFixed(2):''}</div></div>
+            <button onclick="delete acCart['${id}'];renderMenuItemsForOrder();renderCart();" style="padding:3px 8px;background:#fee2e2;color:#ef4444;border:none;border-radius:5px;cursor:pointer;font-size:11px">✕</button>
+        </div>`;
+    }).join('');
+    document.getElementById('acCartTotal').textContent=total>0?total.toFixed(2)+'':'—';
+}
+
+window.submitOrder=async function(){
+    const items=Object.entries(acCart);
+    if(!items.length){alert('⚠️ Sepet boş!');return;}
+    const restId=document.getElementById('acOrderRestaurant').value;
+    const tableNo=document.getElementById('acOrderTable').value.trim();
+    const note=document.getElementById('acOrderNote').value.trim();
+    if(!restId){alert('⚠️ Restoran seçin!');return;}
+    const rest=acRestaurants.find(r=>r.id===restId);
+    const orderItems=items.map(([id,item])=>({id,name:item.name,qty:item.qty,price:item.price}));
+    const total=orderItems.reduce((s,i)=>s+(i.price*i.qty),0);
+    const payload={restaurant_id:restId,table_number:tableNo||null,items:JSON.stringify(orderItems),total:total||null,notes:note||null,status:'pending',created_at:new Date().toISOString(),created_by:curUser.username};
+    try{
+        const{data,error}=await supabase.from('ac_orders').insert([payload]).select();
+        if(error)throw error;
+        // Fişi yazdır
+        await printReceipt(rest,data[0],orderItems,total,tableNo);
+        acCart={};renderCart();renderMenuItemsForOrder();
+        document.getElementById('acOrderNote').value='';
+        alert('✅ Sipariş kaydedildi!');
+    }catch(e){alert('❌ Sipariş kaydedilemedi: '+e.message);}
+}
+
+// ── SİPARİŞLER LİSTESİ ────────────────────────────────────────
+window.loadOrders=async function(){
+    try{
+        let q=supabase.from('ac_orders').select('*, ac_restaurants(name,icon)').order('created_at',{ascending:false});
+        const dateVal=document.getElementById('acOrdDate')?.value;
+        const restVal=document.getElementById('acOrdRestaurant')?.value;
+        const stVal=document.getElementById('acOrdStatus')?.value;
+        if(dateVal)q=q.gte('created_at',dateVal+'T00:00:00').lte('created_at',dateVal+'T23:59:59');
+        if(restVal)q=q.eq('restaurant_id',restVal);
+        if(stVal&&stVal!=='all')q=q.eq('status',stVal);
+        const{data,error}=await q;if(error)throw error;
+        acOrders=data||[];renderOrdersList();
+    }catch(e){console.error(e);}
+}
+
+function renderOrdersList(){
+    const el=document.getElementById('acOrdersList');
+    if(!acOrders.length){el.innerHTML='<div class="empty-state"><div class="e-icon">📋</div><h3>Sipariş Yok</h3></div>';return;}
+    const stMap={pending:{l:'Bekliyor',c:'#f59e0b'},served:{l:'Servis Edildi',c:'#10b981'},cancelled:{l:'İptal',c:'#ef4444'}};
+    el.innerHTML=acOrders.map(o=>{
+        const items=JSON.parse(o.items||'[]');
+        const st=stMap[o.status]||stMap.pending;
+        const rest=o.ac_restaurants;
+        const time=new Date(o.created_at).toLocaleString('tr-TR');
+        return`<div style="background:white;border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.07)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+                <div>
+                    <div style="font-weight:700;font-size:15px;color:#222">${rest?.icon||'🍽️'} ${rest?.name||''} ${o.table_number?'· Masa/Oda: '+o.table_number:''}</div>
+                    <div style="font-size:12px;color:#aaa;margin-top:3px">${time} · ${o.created_by||''}</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <span style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${st.c}20;color:${st.c}">${st.l}</span>
+                    <select onchange="updateOrderStatus('${o.id}',this.value)" style="padding:5px 9px;border:1px solid #e0e0e0;border-radius:6px;font-size:12px">
+                        <option value="pending" ${o.status==='pending'?'selected':''}>Bekliyor</option>
+                        <option value="served" ${o.status==='served'?'selected':''}>Servis Edildi</option>
+                        <option value="cancelled" ${o.status==='cancelled'?'selected':''}>İptal</option>
+                    </select>
+                    <button onclick="reprintOrder('${o.id}')" style="padding:5px 11px;background:#f0f4ff;color:#667eea;border:1px solid #c7d2fe;border-radius:6px;cursor:pointer;font-size:12px">🖨️ Tekrar Bas</button>
+                </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+                ${items.map(i=>`<span style="padding:5px 10px;background:#f8f9ff;border-radius:6px;font-size:13px">${i.name} x${i.qty}${i.price?' ('+((i.price*i.qty).toFixed(2))+')':''}</span>`).join('')}
+            </div>
+            ${o.total?`<div style="margin-top:10px;font-weight:700;font-size:14px;color:#667eea;text-align:right">Toplam: ${parseFloat(o.total).toFixed(2)}</div>`:''}
+            ${o.notes?`<div style="margin-top:8px;font-size:12px;color:#aaa;font-style:italic">"${o.notes}"</div>`:''}
+        </div>`;
+    }).join('');
+}
+
+window.updateOrderStatus=async function(id,status){await supabase.from('ac_orders').update({status,updated_at:new Date().toISOString()}).eq('id',id);}
+
+window.reprintOrder=async function(id){
+    const o=acOrders.find(x=>x.id===id);if(!o)return;
+    const rest=acRestaurants.find(r=>r.id===o.restaurant_id);
+    const items=JSON.parse(o.items||'[]');
+    await printReceipt(rest,o,items,o.total,o.table_number);
+}
+
+// ── ESC/POS YAZICI ────────────────────────────────────────────
+window.connectUSBPrinter=async function(){
+    if(!navigator.usb){alert('⚠️ Bu tarayıcı WebUSB desteklemiyor. Chrome veya Edge kullanın.');return;}
+    try{
+        _printerDevice=await navigator.usb.requestDevice({filters:[]});
+        await _printerDevice.open();
+        if(_printerDevice.configuration===null)await _printerDevice.selectConfiguration(1);
+        await _printerDevice.claimInterface(0);
+        document.getElementById('printerStatus').innerHTML='🟢 USB Yazıcı bağlandı: '+_printerDevice.productName;
+        document.getElementById('printerStatus').style.background='#d1fae5';document.getElementById('printerStatus').style.color='#065f46';
+        _printerSettings.type='usb';
+    }catch(e){if(e.name!=='NotFoundError')alert('❌ USB bağlantı hatası: '+e.message);}
+}
+
+window.connectSerialPrinter=async function(){
+    if(!navigator.serial){alert('⚠️ Bu tarayıcı Web Serial desteklemiyor. Chrome veya Edge kullanın.');return;}
+    try{
+        _printerPort=await navigator.serial.requestPort();
+        await _printerPort.open({baudRate:9600});
+        document.getElementById('printerStatus').innerHTML='🟢 Serial Yazıcı bağlandı';
+        document.getElementById('printerStatus').style.background='#d1fae5';document.getElementById('printerStatus').style.color='#065f46';
+        _printerSettings.type='serial';
+    }catch(e){if(e.name!=='NotFoundError')alert('❌ Serial bağlantı hatası: '+e.message);}
+}
+
+async function sendToUSB(data){
+    if(!_printerDevice){alert('⚠️ Yazıcı bağlı değil! Yazıcı sekmesinden bağlayın.');return false;}
+    try{
+        const iface=_printerDevice.configuration.interfaces[0];
+        const ep=iface.alternates[0].endpoints.find(e=>e.direction==='out');
+        const chunk=65536;
+        for(let i=0;i<data.length;i+=chunk){await _printerDevice.transferOut(ep.endpointNumber,data.slice(i,i+chunk));}
+        return true;
+    }catch(e){console.error('USB yazma hatası:',e);return false;}
+}
+
+async function sendToSerial(data){
+    if(!_printerPort){alert('⚠️ Yazıcı bağlı değil!');return false;}
+    try{
+        const writer=_printerPort.writable.getWriter();
+        await writer.write(data);writer.releaseLock();return true;
+    }catch(e){console.error('Serial yazma hatası:',e);return false;}
+}
+
+function escPOS(lines){
+    const enc=new TextEncoder();
+    const ESC=0x1B,GS=0x1D;
+    const init=new Uint8Array([ESC,0x40]);
+    const centerOn=new Uint8Array([ESC,0x61,0x01]);
+    const leftOn=new Uint8Array([ESC,0x61,0x00]);
+    const boldOn=new Uint8Array([ESC,0x45,0x01]);
+    const boldOff=new Uint8Array([ESC,0x45,0x00]);
+    const bigOn=new Uint8Array([GS,0x21,0x11]);
+    const bigOff=new Uint8Array([GS,0x21,0x00]);
+    const cut=new Uint8Array([GS,0x56,0x42,0x00]);
+    const feed=new Uint8Array([ESC,0x64,0x03]);
+    const nl=new Uint8Array([0x0A]);
+    const dash=enc.encode('--------------------------------\n');
+    let parts=[init];
+    for(const line of lines){
+        if(line.type==='center')parts.push(centerOn);
+        else parts.push(leftOn);
+        if(line.bold)parts.push(boldOn);
+        if(line.big)parts.push(bigOn);
+        parts.push(enc.encode((line.text||'')+'\n'));
+        if(line.big)parts.push(bigOff);
+        if(line.bold)parts.push(boldOff);
+        if(line.dash)parts.push(dash);
+    }
+    parts.push(feed,cut);
+    const total=parts.reduce((s,a)=>s+a.length,0);
+    const out=new Uint8Array(total);
+    let offset=0;
+    for(const p of parts){out.set(p,offset);offset+=p.length;}
+    return out;
+}
+
+async function printReceipt(rest,order,items,total,tableNo){
+    const s=_printerSettings;
+    const now=new Date().toLocaleString('tr-TR');
+    const lines=[
+        {type:'center',bold:true,big:true,text:s.header1||''},
+        {type:'center',bold:true,text:s.header2||rest?.name||''},
+        {type:'center',text:''},
+        {type:'center',text:now,dash:true},
+    ];
+    if(tableNo)lines.push({type:'left',bold:true,text:'Masa/Oda: '+tableNo});
+    lines.push({type:'left',text:'',dash:true});
+    items.forEach(i=>{
+        const sub=i.price?'  '+parseFloat(i.price*i.qty).toFixed(2):'';
+        lines.push({type:'left',text:`${i.qty}x ${i.name}${sub}`});
+    });
+    lines.push({type:'left',text:'',dash:true});
+    if(total&&total>0)lines.push({type:'left',bold:true,text:'TOPLAM: '+parseFloat(total).toFixed(2)});
+    lines.push({type:'center',text:''});
+    lines.push({type:'center',text:s.footer||'Afiyet olsun!'});
+    lines.push({type:'center',text:''});
+    if(order?.notes)lines.push({type:'left',text:'Not: '+order.notes});
+    const data=escPOS(lines);
+    let sent=false;
+    if(s.type==='usb')sent=await sendToUSB(data);
+    else if(s.type==='serial')sent=await sendToSerial(data);
+    if(!sent){
+        // Yazıcı bağlı değilse browser print fallback
+        printReceiptBrowser(rest,items,total,tableNo,order);
+    }
+}
+
+function printReceiptBrowser(rest,items,total,tableNo,order){
+    const s=_printerSettings;
+    const now=new Date().toLocaleString('tr-TR');
+    const w=window.open('','_blank','width=320,height=600');
+    w.document.write(`<html><head><title>Fiş</title><style>
+        body{font-family:monospace;font-size:12px;width:280px;margin:10px;padding:0}
+        .c{text-align:center} .b{font-weight:bold} .dash{border-top:1px dashed #000;margin:4px 0}
+        .row{display:flex;justify-content:space-between}
+        @media print{@page{margin:0;size:58mm auto}}
+    </style></head><body>
+    <div class="c b" style="font-size:14px">${s.header1||''}</div>
+    <div class="c b">${s.header2||rest?.name||''}</div>
+    <div class="c">${now}</div>
+    <div class="dash"></div>
+    ${tableNo?`<div><b>Masa/Oda:</b> ${tableNo}</div>`:''}
+    <div class="dash"></div>
+    ${items.map(i=>`<div class="row"><span>${i.qty}x ${i.name}</span>${i.price?'<span>'+parseFloat(i.price*i.qty).toFixed(2)+'</span>':''}</div>`).join('')}
+    <div class="dash"></div>
+    ${total&&total>0?`<div class="row b"><span>TOPLAM</span><span>${parseFloat(total).toFixed(2)}</span></div>`:''}
+    ${order?.notes?`<div style="margin-top:6px;font-style:italic">Not: ${order.notes}</div>`:''}
+    <div class="dash"></div>
+    <div class="c">${s.footer||'Afiyet olsun!'}</div>
+    </body></html>`);
+    w.document.close();
+    setTimeout(()=>{w.print();w.close();},400);
+}
+
+window.printTest=async function(){
+    const items=[{name:'Test Ürün 1',qty:2,price:10},{name:'Test Ürün 2',qty:1,price:25}];
+    await printReceipt({name:'Test Restoran'},null,items,45,'101');
+}
+
+function loadPrinterSettings(){
+    const saved=localStorage.getItem('acPrinterSettings');
+    if(saved){
+        try{const p=JSON.parse(saved);Object.assign(_printerSettings,p);
+            if(document.getElementById('printerHeader1'))document.getElementById('printerHeader1').value=p.header1||'';
+            if(document.getElementById('printerHeader2'))document.getElementById('printerHeader2').value=p.header2||'';
+            if(document.getElementById('printerFooter'))document.getElementById('printerFooter').value=p.footer||'';
+        }catch(e){}
+    }
+}
+
+window.savePrinterSettings=function(){
+    _printerSettings.header1=document.getElementById('printerHeader1').value;
+    _printerSettings.header2=document.getElementById('printerHeader2').value;
+    _printerSettings.footer=document.getElementById('printerFooter').value;
+    localStorage.setItem('acPrinterSettings',JSON.stringify(_printerSettings));
+    alert('✅ Yazıcı ayarları kaydedildi!');
 }
 
 </script>
