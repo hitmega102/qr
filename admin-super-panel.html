@@ -2081,8 +2081,8 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
 </div>
 
 <!-- Soru Ekle Modal -->
-<div id="addQuestionModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
-<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+<div id="addQuestionModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;overflow-y:auto;padding:20px">
+<div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
     <h3 style="font-size:18px;color:#333">➕ Soru Ekle</h3>
     <button onclick="closeAddQuestionModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">✕</button>
@@ -2103,6 +2103,39 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
     <div>
       <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px">Soru Adı (RU)</label>
       <input id="aqNameRu" type="text" placeholder="Ör: Качество еды" style="width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px">
+    </div>
+    <!-- Diğer diller: başlangıçta gizli, toggle ile açılır -->
+    <div>
+      <button type="button" onclick="toggleMoreLangs()" id="moreLangsBtn" style="padding:7px 14px;background:#f0f4ff;color:#667eea;border:1px solid #c7d2fe;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">🌐 Diğer Dilleri Göster (DE, PL, CZ, FR, NL, RO)</button>
+    </div>
+    <div id="moreLangsFields" style="display:none;display:none;flex-direction:column;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px">🇩🇪 Almanca (DE)</label>
+          <input id="aqNameDe" type="text" placeholder="Ör: Essensqualität" style="width:100%;padding:9px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px">🇵🇱 Lehçe (PL)</label>
+          <input id="aqNamePl" type="text" placeholder="Ör: Jakość jedzenia" style="width:100%;padding:9px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px">🇨🇿 Çekçe (CZ)</label>
+          <input id="aqNameCs" type="text" placeholder="Ör: Kvalita jídla" style="width:100%;padding:9px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px">🇫🇷 Fransızca (FR)</label>
+          <input id="aqNameFr" type="text" placeholder="Ör: Qualité de la nourriture" style="width:100%;padding:9px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px">🇳🇱 Hollandaca (NL)</label>
+          <input id="aqNameNl" type="text" placeholder="Ör: Kwaliteit van het eten" style="width:100%;padding:9px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px">🇷🇴 Romence (RO)</label>
+          <input id="aqNameRo" type="text" placeholder="Ör: Calitatea mâncării" style="width:100%;padding:9px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px">
+        </div>
+      </div>
+      <p style="font-size:11px;color:#aaa;margin:0">Boş bırakılan alanlar Türkçe ile doldurulur.</p>
     </div>
     <div style="display:flex;gap:10px;margin-top:6px">
       <button onclick="saveAddQuestion()" style="flex:1;padding:12px;background:#10b981;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">💾 Ekle</button>
@@ -5001,11 +5034,22 @@ window.deleteForm = async function(id) {
 }
 
 window.openAddQuestionModal = function() {
-    document.getElementById('aqIcon').value = '';
-    document.getElementById('aqNameTr').value = '';
-    document.getElementById('aqNameEn').value = '';
-    document.getElementById('aqNameRu').value = '';
+    ['aqIcon','aqNameTr','aqNameEn','aqNameRu','aqNameDe','aqNamePl','aqNameCs','aqNameFr','aqNameNl','aqNameRo'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value = '';
+    });
+    const mf = document.getElementById('moreLangsFields');
+    if(mf) mf.style.display = 'none';
+    const mb = document.getElementById('moreLangsBtn');
+    if(mb) mb.textContent = '🌐 Diğer Dilleri Göster (DE, PL, CZ, FR, NL, RO)';
     document.getElementById('addQuestionModal').style.display = 'flex';
+}
+
+window.toggleMoreLangs = function() {
+    const mf = document.getElementById('moreLangsFields');
+    const mb = document.getElementById('moreLangsBtn');
+    const isHidden = mf.style.display === 'none' || mf.style.display === '';
+    mf.style.display = isHidden ? 'flex' : 'none';
+    mb.textContent = isHidden ? '🌐 Diğer Dilleri Gizle' : '🌐 Diğer Dilleri Göster (DE, PL, CZ, FR, NL, RO)';
 }
 window.closeAddQuestionModal = function() {
     document.getElementById('addQuestionModal').style.display = 'none';
@@ -5016,6 +5060,12 @@ window.saveAddQuestion = async function() {
     const nameTr = document.getElementById('aqNameTr').value.trim();
     const nameEn = document.getElementById('aqNameEn').value.trim();
     const nameRu = document.getElementById('aqNameRu').value.trim();
+    const nameDe = document.getElementById('aqNameDe')?.value.trim() || '';
+    const namePl = document.getElementById('aqNamePl')?.value.trim() || '';
+    const nameCs = document.getElementById('aqNameCs')?.value.trim() || '';
+    const nameFr = document.getElementById('aqNameFr')?.value.trim() || '';
+    const nameNl = document.getElementById('aqNameNl')?.value.trim() || '';
+    const nameRo = document.getElementById('aqNameRo')?.value.trim() || '';
     if (!nameTr) { alert('⚠️ Türkçe soru adı zorunlu!'); return; }
     if (!_activeFormId) { alert('⚠️ Önce bir form seçin!'); return; }
 
@@ -5031,8 +5081,12 @@ window.saveAddQuestion = async function() {
             name_tr: nameTr,
             name_en: nameEn || nameTr,
             name_ru: nameRu || nameTr,
-            name_de: nameTr, name_pl: nameTr, name_cs: nameTr,
-            name_fr: nameTr, name_da: nameTr, name_ro: nameTr,
+            name_de: nameDe || nameTr,
+            name_pl: namePl || nameTr,
+            name_cs: nameCs || nameTr,
+            name_fr: nameFr || nameTr,
+            name_da: nameNl || nameTr,
+            name_ro: nameRo || nameTr,
             sort_order: nextOrder,
             is_active: true
         }]);
