@@ -207,46 +207,21 @@ let currentLang = 'tr';
 const ratings = {};
 
 // ─── LOAD QUESTIONS FROM DATABASE ────────────────────────────
-let CURRENT_FORM = null; // { id, name, slug, icon, description }
-
-async function loadQuestions(formSlug) {
+async function loadQuestions() {
     try {
-        let query;
-        if (formSlug && formSlug !== 'default') {
-            // Önce formu bul
-            const { data: formData, error: formErr } = await supabase
-                .from('survey_forms')
-                .select('*')
-                .eq('slug', formSlug)
-                .maybeSingle();
-            if (formErr) throw formErr;
-            CURRENT_FORM = formData;
-
-            if (CURRENT_FORM) {
-                // Bu forma ait sorular
-                const { data, error } = await supabase
-                    .from('survey_questions')
-                    .select('*')
-                    .eq('form_id', CURRENT_FORM.id)
-                    .eq('is_active', true)
-                    .order('sort_order', { ascending: true });
-                if (error) throw error;
-                QUESTIONS_DB = data || [];
-            }
-        } else {
-            // Varsayılan: form_id NULL olan sorular (eski oda anketi)
-            const { data, error } = await supabase
-                .from('survey_questions')
-                .select('*')
-                .is('form_id', null)
-                .eq('is_active', true)
-                .order('sort_order', { ascending: true });
-            if (error) throw error;
-            QUESTIONS_DB = data || [];
-        }
-        console.log('✅ Sorular yüklendi:', QUESTIONS_DB.length, CURRENT_FORM?.name||'varsayılan');
+        const { data, error } = await supabase
+            .from('survey_questions')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true });
+        
+        if (error) throw error;
+        
+        QUESTIONS_DB = data || [];
+        console.log('✅ Sorular yüklendi:', QUESTIONS_DB.length);
     } catch (e) {
         console.error('❌ Soru yükleme hatası:', e);
+        // Fallback: boş bırak (kullanıcıya mesaj göster)
         QUESTIONS_DB = [];
     }
 }
@@ -372,21 +347,21 @@ const LANGS = {
         errSend:'L\'enquête n\'a pas pu être envoyée.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_fr}))
     },
-    da: {
-        code:'da', name:'DK',
-        title:'🏨 Gæstetilfreds Undersøgelse',
-        subtitle:'Jeres tilbagemeldinger er meget vigtige for os!',
-        labelRoom:'Rumsnummer', labelEmail:'Din e-mailadresse',
-        labelComments:'Forslag og kommentarer',
-        btnSubmit:'Indsænd undersøgelse',
-        successTitle:'Tak!',
-        successBody:'Jeres tilbagemeldinger er meget forskellige for os.',
-        successFooter:'Nyd dit ophold! 🏨',
-        errRoom:'Venlig udfyld dit rumsnummer!',
-        errEmail:'Venlig udfyld din e-mailadresse!',
-        errEmailFmt:'Venlig udfyld en gyldig e-mailadresse!',
-        errRating:'Venlig vurderer mindst én afdeling!',
-        errSend:'Undersøgelsen kunne ikke sendes.',
+    nl: {
+        code:'nl', name:'NL',
+        title:'🏨 Gasttevredenheidsonderzoek',
+        subtitle:'Uw feedback is erg belangrijk voor ons!',
+        labelRoom:'Kamernummer', labelEmail:'Uw e-mailadres',
+        labelComments:'Suggesties en opmerkingen',
+        btnSubmit:'Enquête verzenden',
+        successTitle:'Dank u!',
+        successBody:'Uw feedback is erg waardevol voor ons. We zullen uw opmerkingen in overweging nemen.',
+        successFooter:'Geniet van uw verblijf! 🏨',
+        errRoom:'Voer uw kamernummer in!',
+        errEmail:'Voer uw e-mailadres in!',
+        errEmailFmt:'Voer een geldig e-mailadres in!',
+        errRating:'Beoordeel ten minste één afdeling!',
+        errSend:'De enquête kon niet worden verzonden. Probeer opnieuw.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_da}))
     },
     ro: {
@@ -507,8 +482,7 @@ window.submitSurvey = async function() {
             room_number: room,
             email: email,
             comments: document.getElementById('comments').value || null,
-            ratings: ratingsObj,
-            form_id: CURRENT_FORM?.slug || null
+            ratings: ratingsObj
         };
 
         const { error } = await supabase.from('surveys').insert([payload]);
@@ -535,23 +509,15 @@ function hideError() { document.getElementById('errorMessage').classList.remove(
 
 // ─── INIT ─────────────────────────────────────────────────────
 (async function init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const formSlug = urlParams.get('form') || null;
-    const room = decodeURIComponent(urlParams.get('oda') || '');
-
-    // Önce formu ve soruları yükle
-    await loadQuestions(formSlug);
-
-    // Form başlığını güncelle
-    if (CURRENT_FORM) {
-        const titleEl = document.getElementById('surveyTitle');
-        const subtitleEl = document.getElementById('surveySubtitle');
-        if (titleEl) titleEl.textContent = `${CURRENT_FORM.icon||'🍽️'} ${CURRENT_FORM.name}`;
-        if (subtitleEl && CURRENT_FORM.description) subtitleEl.textContent = CURRENT_FORM.description;
-    }
-
+    // ÖNCE SORULARI YÜKLe
+    await loadQuestions();
+    
+    // URL'den oda
+    const url = new URLSearchParams(window.location.search);
+    const room = decodeURIComponent(url.get('oda') || '');
     if (room) document.getElementById('roomNumber').value = room;
-
+    
+    // Dil
     currentLang = detectLang();
     setLang(currentLang);
 })();
