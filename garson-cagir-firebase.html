@@ -388,6 +388,7 @@
                 errorText: 'Bağlantı sorunu. Lütfen tekrar deneyin.',
                 allergenNote: 'Alerjeniniz varsa lütfen garsonumuzu bilgilendirin.',
                 menuTitle: 'İÇECEK MENÜSÜ',
+                allTab: 'Tümü',
                 cooldown: 's sonra tekrar çağırabilirsiniz'
             },
             en: {
@@ -404,6 +405,7 @@
                 errorText: 'Connection problem. Please try again.',
                 allergenNote: 'Please inform our staff if you have any allergies.',
                 menuTitle: 'DRINKS MENU',
+                allTab: 'All',
                 cooldown: 's later you can call again'
             },
             ru: {
@@ -420,6 +422,7 @@
                 errorText: 'Проблема с подключением. Пожалуйста, попробуйте снова.',
                 allergenNote: 'Сообщите нашему персоналу, если у вас есть аллергия.',
                 menuTitle: 'МЕНЮ НАПИТКОВ',
+                allTab: 'Все',
                 cooldown: 'с — повторный вызов доступен через'
             },
             de: {
@@ -436,6 +439,7 @@
                 errorText: 'Verbindungsproblem. Bitte versuchen Sie es erneut.',
                 allergenNote: 'Bitte informieren Sie unser Personal, wenn Sie Allergien haben.',
                 menuTitle: 'GETRÄNKEKARTE',
+                allTab: 'Alle',
                 cooldown: 's — erneuter Ruf möglich'
             },
             pl: {
@@ -452,6 +456,7 @@
                 errorText: 'Problem z połączeniem. Spróbuj ponownie.',
                 allergenNote: 'Poinformuj nasz personel, jeśli masz alergie.',
                 menuTitle: 'MENU NAPOJÓW',
+                allTab: 'Wszystkie',
                 cooldown: 's — możesz ponownie wezwać'
             },
             fr: {
@@ -468,6 +473,7 @@
                 errorText: 'Problème de connexion. Veuillez réessayer.',
                 allergenNote: 'Veuillez informer notre personnel si vous avez des allergies.',
                 menuTitle: 'CARTE DES BOISSONS',
+                allTab: 'Tous',
                 cooldown: 's — nouvel appel possible'
             },
             nl: {
@@ -484,6 +490,7 @@
                 errorText: 'Verbindingsprobleem. Probeer het opnieuw.',
                 allergenNote: 'Informeer ons personeel als u allergieën heeft.',
                 menuTitle: 'DRANKENMENU',
+                allTab: 'Alle',
                 cooldown: 's — opnieuw oproepen mogelijk'
             },
             cs: {
@@ -500,6 +507,7 @@
                 errorText: 'Problém s připojením. Zkuste to prosím znovu.',
                 allergenNote: 'Informujte prosím náš personál, pokud máte alergie.',
                 menuTitle: 'NÁPOJOVÝ LÍSTEK',
+                allTab: 'Vše',
                 cooldown: 's — lze znovu zavolat'
             },
             ro: {
@@ -516,6 +524,7 @@
                 errorText: 'Problemă de conexiune. Vă rugăm să încercați din nou.',
                 allergenNote: 'Vă rugăm să informați personalul nostru dacă aveți alergii.',
                 menuTitle: 'MENIU BĂUTURI',
+                allTab: 'Toate',
                 cooldown: 's — puteți apela din nou'
             }
         };
@@ -777,9 +786,10 @@
                 tabs.innerHTML = '';
                 return;
             }
+            const allTabLabel = (translations[currentLang] && translations[currentLang].allTab) || 'All';
             tabs.innerHTML =
                 `<button class="menu-tab ${currentMenuCat === '__all__' ? 'active' : ''}"
-                     onclick="setMenuCat('__all__', this)">Tümü</button>` +
+                     onclick="setMenuCat('__all__', this)">${allTabLabel}</button>` +
                 allCategories.map(c => {
                     const cname = (c.names && (c.names[currentLang] || c.names['en'] || c.names['tr'])) || c.name || '';
                     return `<button class="menu-tab ${currentMenuCat === c.id ? 'active' : ''}"
