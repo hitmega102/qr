@@ -797,7 +797,7 @@
 
         window.clearCompleted = async function() {
             if (!confirm('Tamamlanan talepler ekrandan kaldırılsın mı? (Geçmiş verileri korunur)')) return;
-            for (const req of allRequests.filter(r => r.status === 'completed' && !req.hidden)) {
+            for (const req of allRequests.filter(r => r.status === 'completed' && !r.hidden)) {
                 try { await updateDoc(doc(db, 'requests', req.id), { hidden: true }); } catch(e) {}
             }
             showToast('✅ Temizlendi', 'Tamamlananlar gizlendi, geçmiş korundu.');
