@@ -449,17 +449,22 @@
         function playNotificationSound() {
             if (!soundEnabled) return;
             try {
-                const ctx  = new (window.AudioContext || window.webkitAudioContext)();
-                const osc  = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = 800;
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-                osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + 0.5);
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+                notes.forEach((freq, i) => {
+                    const osc  = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const start = ctx.currentTime + i * 0.18;
+                    gain.gain.setValueAtTime(0, start);
+                    gain.gain.linearRampToValueAtTime(0.4, start + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+                    osc.start(start);
+                    osc.stop(start + 0.4);
+                });
             } catch(e) {}
         }
 
@@ -496,10 +501,10 @@
         function updateStats() {
             const visible   = allRequests.filter(r => !r.hidden);
             const pending   = visible.filter(r => r.status === 'pending').length;
-            const completed = visible.filter(r => r.status === 'completed').length;
+            const completed = allRequests.filter(r => r.status === 'completed').length;
             document.getElementById('pendingCount').textContent   = pending;
             document.getElementById('completedCount').textContent = completed;
-            document.getElementById('totalCount').textContent     = visible.length;
+            document.getElementById('totalCount').textContent     = allRequests.length;
 
             if (pending > lastPendingCount) {
                 playNotificationSound();
@@ -532,8 +537,8 @@
 
             // Gizlenenler ekranda görünmez ama geçmiş için allRequests'te kalır
             let filtered = allRequests.filter(r => !r.hidden);
-            if (currentFilter === 'pending')   filtered = allRequests.filter(r => r.status === 'pending');
-            if (currentFilter === 'completed') filtered = allRequests.filter(r => r.status === 'completed');
+            if (currentFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending');
+            if (currentFilter === 'completed') filtered = filtered.filter(r => r.status === 'completed');
 
             if (viewMode === 'masa') {
                 grid.style.gridTemplateColumns = '1fr';
