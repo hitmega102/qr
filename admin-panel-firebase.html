@@ -576,6 +576,11 @@
                             <span class="info-label">Durum:</span>
                             <span class="info-value">${req.status === 'pending' ? '⏳ Bekliyor' : '✅ Tamamlandı'}</span>
                         </div>
+                        ${req.status === 'completed' && req.completedAt && req.createdAt ? `
+                        <div class="info-row">
+                            <span class="info-label">Yanıt Süresi:</span>
+                            <span class="info-value" style="color:#10b981">⚡ ${formatTime(Math.round((new Date(req.completedAt) - new Date(req.createdAt)) / 1000))}</span>
+                        </div>` : ''}
                     </div>
                     ${req.status === 'pending' ? `
                     <div class="card-actions">
@@ -625,7 +630,7 @@
                             <div class="group-req-time">${timeStr(req)}</div>
                         </div>
                         ${isDone
-                            ? '<div class="group-req-timer" style="background:#d1fae5;color:#059669">✓ Tamam</div>'
+                            ? `<div class="group-req-timer" style="background:#d1fae5;color:#059669">✓ ${req.completedAt && req.createdAt ? formatTime(Math.round((new Date(req.completedAt) - new Date(req.createdAt)) / 1000)) : 'Tamam'}</div>`
                             : `<div class="group-req-timer ${tClass}">⏱ ${formatTime(sec)}</div>`}
                         <div class="group-req-actions">
                             ${!isDone ? `<button class="mini-btn done" onclick="completeRequest('${req.id}')">✓</button>` : ''}
@@ -694,6 +699,12 @@
                     const masaReqs   = todayReqs.filter(r => r.masa == masa);
                     const doneCount  = masaReqs.filter(r => r.status === 'completed').length;
                     const waitCount  = masaReqs.filter(r => r.status === 'pending').length;
+                    const masaDurations = masaReqs
+                        .filter(r => r.status === 'completed' && r.completedAt && r.createdAt)
+                        .map(r => (new Date(r.completedAt) - new Date(r.createdAt)) / 1000);
+                    const masaAvg = masaDurations.length
+                        ? formatTime(Math.round(masaDurations.reduce((a,b) => a+b, 0) / masaDurations.length))
+                        : '—';
                     const saatler    = masaReqs
                         .map(r => r.createdAt ? new Date(r.createdAt).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}) : '')
                         .filter(Boolean).join(', ');
@@ -702,6 +713,7 @@
                         <td style="font-weight:700;color:#1e3c72">${cnt}</td>
                         <td style="color:#10b981;font-weight:700">${doneCount}</td>
                         <td style="color:#f59e0b;font-weight:700">${waitCount}</td>
+                        <td style="color:#764ba2;font-weight:700">${masaAvg}</td>
                         <td style="color:#888;font-size:13px">${saatler || '—'}</td>
                     </tr>`;
                 }).join('');
@@ -756,7 +768,7 @@
                 <p class="section-title">🪑 Masa Detayları</p>
                 ${masaRows ? `<table class="history-table">
                     <thead><tr>
-                        <th>Masa</th><th>Toplam</th><th>Tamamlanan</th><th>Bekleyen</th><th>Saatler</th>
+                        <th>Masa</th><th>Toplam</th><th>Tamamlanan</th><th>Bekleyen</th><th>Ort. Yanıt</th><th>Saatler</th>
                     </tr></thead>
                     <tbody>${masaRows}</tbody>
                 </table>` : '<p style="color:#ccc;text-align:center;padding:24px">Bugün henüz talep yok</p>'}
