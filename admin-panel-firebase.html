@@ -494,15 +494,16 @@
 
         // ── STATS ─────────────────────────────────────────────────
         function updateStats() {
-            const pending   = allRequests.filter(r => r.status === 'pending').length;
-            const completed = allRequests.filter(r => r.status === 'completed').length;
+            const visible   = allRequests.filter(r => !r.hidden);
+            const pending   = visible.filter(r => r.status === 'pending').length;
+            const completed = visible.filter(r => r.status === 'completed').length;
             document.getElementById('pendingCount').textContent   = pending;
             document.getElementById('completedCount').textContent = completed;
-            document.getElementById('totalCount').textContent     = allRequests.length;
+            document.getElementById('totalCount').textContent     = visible.length;
 
             if (pending > lastPendingCount) {
                 playNotificationSound();
-                const newest = allRequests.filter(r => r.status === 'pending')[0];
+                const newest = visible.filter(r => r.status === 'pending')[0];
                 if (newest) showToast('🔔 Yeni Çağrı!', `Masa ${newest.masa} — ${newest.type}`);
             }
             lastPendingCount = pending;
@@ -529,7 +530,8 @@
                 return;
             }
 
-            let filtered = allRequests;
+            // Gizlenenler ekranda görünmez ama geçmiş için allRequests'te kalır
+            let filtered = allRequests.filter(r => !r.hidden);
             if (currentFilter === 'pending')   filtered = allRequests.filter(r => r.status === 'pending');
             if (currentFilter === 'completed') filtered = allRequests.filter(r => r.status === 'completed');
 
@@ -786,19 +788,19 @@
         };
 
         window.deleteRequest = async function(id) {
-            if (!confirm('Bu talebi silmek istediğinizden emin misiniz?')) return;
+            if (!confirm('Bu talebi kaldırmak istediğinizden emin misiniz?')) return;
             try {
-                await deleteDoc(doc(db, 'requests', id));
-                showToast('🗑️ Silindi', 'Talep silindi.');
-            } catch(e) { showToast('⚠️ Hata', 'Silme başarısız.'); }
+                await updateDoc(doc(db, 'requests', id), { hidden: true });
+                showToast('✅ Kaldırıldı', 'Talep gizlendi, geçmiş korundu.');
+            } catch(e) { showToast('⚠️ Hata', 'İşlem başarısız.'); }
         };
 
         window.clearCompleted = async function() {
-            if (!confirm('Tamamlanan tüm talepleri silmek istediğinizden emin misiniz?')) return;
-            for (const req of allRequests.filter(r => r.status === 'completed')) {
-                try { await deleteDoc(doc(db, 'requests', req.id)); } catch(e) {}
+            if (!confirm('Tamamlanan talepler ekrandan kaldırılsın mı? (Geçmiş verileri korunur)')) return;
+            for (const req of allRequests.filter(r => r.status === 'completed' && !req.hidden)) {
+                try { await updateDoc(doc(db, 'requests', req.id), { hidden: true }); } catch(e) {}
             }
-            showToast('🗑️ Temizlendi', 'Tamamlanan talepler silindi.');
+            showToast('✅ Temizlendi', 'Tamamlananlar gizlendi, geçmiş korundu.');
         };
 
         // ── REALTİME DİNLEYİCİ ───────────────────────────────────
