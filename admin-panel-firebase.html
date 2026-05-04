@@ -402,7 +402,6 @@
             <div class="view-toggle">
                 <button class="view-btn active" id="viewCards"   onclick="setView('cards')">🃏 Kartlar</button>
                 <button class="view-btn"         id="viewMasa"    onclick="setView('masa')">🪑 Masa Grubu</button>
-                <button class="view-btn"         id="viewHistory" onclick="setView('history')">📊 Geçmiş</button>
             </div>
 
             <div class="sound-toggle">
@@ -449,22 +448,17 @@
         function playNotificationSound() {
             if (!soundEnabled) return;
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
-                notes.forEach((freq, i) => {
-                    const osc  = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.type = 'sine';
-                    osc.frequency.value = freq;
-                    const start = ctx.currentTime + i * 0.18;
-                    gain.gain.setValueAtTime(0, start);
-                    gain.gain.linearRampToValueAtTime(0.4, start + 0.05);
-                    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
-                    osc.start(start);
-                    osc.stop(start + 0.4);
-                });
+                const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+                const osc  = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
             } catch(e) {}
         }
 
@@ -499,8 +493,7 @@
 
         // ── STATS ─────────────────────────────────────────────────
         function updateStats() {
-            const visible   = allRequests.filter(r => !r.hidden);
-            const pending   = visible.filter(r => r.status === 'pending').length;
+            const pending   = allRequests.filter(r => r.status === 'pending').length;
             const completed = allRequests.filter(r => r.status === 'completed').length;
             document.getElementById('pendingCount').textContent   = pending;
             document.getElementById('completedCount').textContent = completed;
@@ -508,7 +501,7 @@
 
             if (pending > lastPendingCount) {
                 playNotificationSound();
-                const newest = visible.filter(r => r.status === 'pending')[0];
+                const newest = allRequests.filter(r => r.status === 'pending')[0];
                 if (newest) showToast('🔔 Yeni Çağrı!', `Masa ${newest.masa} — ${newest.type}`);
             }
             lastPendingCount = pending;
@@ -529,16 +522,9 @@
             const grid = document.getElementById('requestsGrid');
             updateStats();
 
-            if (viewMode === 'history') {
-                grid.style.gridTemplateColumns = '1fr';
-                renderHistoryView(grid);
-                return;
-            }
-
-            // Gizlenenler ekranda görünmez ama geçmiş için allRequests'te kalır
-            let filtered = allRequests.filter(r => !r.hidden);
-            if (currentFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending');
-            if (currentFilter === 'completed') filtered = filtered.filter(r => r.status === 'completed');
+            let filtered = allRequests;
+            if (currentFilter === 'pending')   filtered = allRequests.filter(r => r.status === 'pending');
+            if (currentFilter === 'completed') filtered = allRequests.filter(r => r.status === 'completed');
 
             if (viewMode === 'masa') {
                 grid.style.gridTemplateColumns = '1fr';
@@ -583,11 +569,6 @@
                             <span class="info-label">Durum:</span>
                             <span class="info-value">${req.status === 'pending' ? '⏳ Bekliyor' : '✅ Tamamlandı'}</span>
                         </div>
-                        ${req.status === 'completed' && req.completedAt && req.createdAt ? `
-                        <div class="info-row">
-                            <span class="info-label">Yanıt Süresi:</span>
-                            <span class="info-value" style="color:#10b981">⚡ ${formatTime(Math.round((new Date(req.completedAt) - new Date(req.createdAt)) / 1000))}</span>
-                        </div>` : ''}
                     </div>
                     ${req.status === 'pending' ? `
                     <div class="card-actions">
@@ -637,7 +618,7 @@
                             <div class="group-req-time">${timeStr(req)}</div>
                         </div>
                         ${isDone
-                            ? `<div class="group-req-timer" style="background:#d1fae5;color:#059669">✓ ${req.completedAt && req.createdAt ? formatTime(Math.round((new Date(req.completedAt) - new Date(req.createdAt)) / 1000)) : 'Tamam'}</div>`
+                            ? '<div class="group-req-timer" style="background:#d1fae5;color:#059669">✓ Tamam</div>'
                             : `<div class="group-req-timer ${tClass}">⏱ ${formatTime(sec)}</div>`}
                         <div class="group-req-actions">
                             ${!isDone ? `<button class="mini-btn done" onclick="completeRequest('${req.id}')">✓</button>` : ''}
@@ -671,141 +652,43 @@
         };
 
         window.completeAll = async function(ids) {
+            const now = new Date().toISOString();
             for (const id of ids) {
+                const req = allRequests.find(r => r.id === id);
                 await updateDoc(doc(db, 'requests', id), {
-                    status: 'completed', completedAt: new Date().toISOString()
+                    status: 'completed', completedAt: now
                 });
             }
             showToast('✅ Tamamlandı', 'Masanın tüm talepleri tamamlandı.');
         };
 
-        // ── GEÇMİŞ GÖRÜNÜMÜ ──────────────────────────────────────
-        function renderHistoryView(grid) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const todayReqs = allRequests.filter(r => r.createdAt && new Date(r.createdAt) >= today);
-            const completed = todayReqs.filter(r => r.status === 'completed');
-            const pending   = todayReqs.filter(r => r.status === 'pending');
-
-            // Ortalama yanıt süresi
-            const durations = completed
-                .filter(r => r.completedAt && r.createdAt)
-                .map(r => (new Date(r.completedAt) - new Date(r.createdAt)) / 1000);
-            const avgSec = durations.length
-                ? Math.round(durations.reduce((a,b) => a+b, 0) / durations.length)
-                : null;
-
-            // Masa bazında sayım
-            const masaCount = {};
-            todayReqs.forEach(r => { masaCount[r.masa] = (masaCount[r.masa] || 0) + 1; });
-
-            const masaRows = Object.entries(masaCount)
-                .sort((a, b) => b[1] - a[1])
-                .map(([masa, cnt]) => {
-                    const masaReqs   = todayReqs.filter(r => r.masa == masa);
-                    const doneCount  = masaReqs.filter(r => r.status === 'completed').length;
-                    const waitCount  = masaReqs.filter(r => r.status === 'pending').length;
-                    const masaDurations = masaReqs
-                        .filter(r => r.status === 'completed' && r.completedAt && r.createdAt)
-                        .map(r => (new Date(r.completedAt) - new Date(r.createdAt)) / 1000);
-                    const masaAvg = masaDurations.length
-                        ? formatTime(Math.round(masaDurations.reduce((a,b) => a+b, 0) / masaDurations.length))
-                        : '—';
-                    const saatler    = masaReqs
-                        .map(r => r.createdAt ? new Date(r.createdAt).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}) : '')
-                        .filter(Boolean).join(', ');
-                    return `<tr>
-                        <td><span class="masa-pill">Masa ${masa}</span></td>
-                        <td style="font-weight:700;color:#1e3c72">${cnt}</td>
-                        <td style="color:#10b981;font-weight:700">${doneCount}</td>
-                        <td style="color:#f59e0b;font-weight:700">${waitCount}</td>
-                        <td style="color:#764ba2;font-weight:700">${masaAvg}</td>
-                        <td style="color:#888;font-size:13px">${saatler || '—'}</td>
-                    </tr>`;
-                }).join('');
-
-            // Saatlik bar grafiği (08–23)
-            const hourCounts = Array(24).fill(0);
-            todayReqs.forEach(r => { if (r.createdAt) hourCounts[new Date(r.createdAt).getHours()]++; });
-            const displayHours = Array.from({length: 16}, (_, i) => i + 8);
-            const maxH = Math.max(...displayHours.map(h => hourCounts[h]), 1);
-            const bars = displayHours.map(h => {
-                const px = Math.round((hourCounts[h] / maxH) * 56);
-                return `<div class="hour-col">
-                    <div class="hour-bar" style="height:${hourCounts[h] > 0 ? Math.max(px, 4) : 0}px"
-                         title="${h}:00 — ${hourCounts[h]} talep"></div>
-                    <div class="hour-label">${h}</div>
-                </div>`;
-            }).join('');
-
-            grid.innerHTML = `<div class="history-panel">
-                <h2>📊 Bugünün Özeti &nbsp;<span style="font-size:14px;color:#888;font-weight:500">
-                    ${today.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})}</span></h2>
-
-                <div class="history-stats">
-                    <div class="history-stat">
-                        <div class="h-value">${todayReqs.length}</div>
-                        <div class="h-label">Toplam Talep</div>
-                    </div>
-                    <div class="history-stat">
-                        <div class="h-value" style="color:#10b981">${completed.length}</div>
-                        <div class="h-label">Tamamlanan</div>
-                    </div>
-                    <div class="history-stat">
-                        <div class="h-value" style="color:#f59e0b">${pending.length}</div>
-                        <div class="h-label">Bekleyen</div>
-                    </div>
-                    <div class="history-stat">
-                        <div class="h-value" style="color:#764ba2">${Object.keys(masaCount).length}</div>
-                        <div class="h-label">Farklı Masa</div>
-                    </div>
-                    <div class="history-stat">
-                        <div class="h-value" style="font-size:${avgSec !== null ? '20px' : '26px'}">
-                            ${avgSec !== null ? formatTime(avgSec) : '—'}</div>
-                        <div class="h-label">Ort. Yanıt Süresi</div>
-                    </div>
-                </div>
-
-                <div class="hour-bar-wrap">
-                    <p class="section-title">⏰ Saatlik Talep Dağılımı</p>
-                    <div class="hour-bars">${bars}</div>
-                </div>
-
-                <p class="section-title">🪑 Masa Detayları</p>
-                ${masaRows ? `<table class="history-table">
-                    <thead><tr>
-                        <th>Masa</th><th>Toplam</th><th>Tamamlanan</th><th>Bekleyen</th><th>Ort. Yanıt</th><th>Saatler</th>
-                    </tr></thead>
-                    <tbody>${masaRows}</tbody>
-                </table>` : '<p style="color:#ccc;text-align:center;padding:24px">Bugün henüz talep yok</p>'}
-            </div>`;
-        }
 
         // ── FİREBASE İŞLEMLERİ ───────────────────────────────────
         window.completeRequest = async function(id) {
             try {
+                const req = allRequests.find(r => r.id === id);
+                const now = new Date().toISOString();
                 await updateDoc(doc(db, 'requests', id), {
-                    status: 'completed', completedAt: new Date().toISOString()
+                    status: 'completed', completedAt: now
                 });
                 showToast('✅ Tamamlandı', 'Talep başarıyla tamamlandı.');
             } catch(e) { showToast('⚠️ Hata', 'İşlem başarısız.'); }
         };
 
         window.deleteRequest = async function(id) {
-            if (!confirm('Bu talebi kaldırmak istediğinizden emin misiniz?')) return;
+            if (!confirm('Bu talebi silmek istediğinizden emin misiniz?')) return;
             try {
-                await updateDoc(doc(db, 'requests', id), { hidden: true });
-                showToast('✅ Kaldırıldı', 'Talep gizlendi, geçmiş korundu.');
-            } catch(e) { showToast('⚠️ Hata', 'İşlem başarısız.'); }
+                await deleteDoc(doc(db, 'requests', id));
+                showToast('🗑️ Silindi', 'Talep silindi.');
+            } catch(e) { showToast('⚠️ Hata', 'Silme başarısız.'); }
         };
 
         window.clearCompleted = async function() {
-            if (!confirm('Tamamlanan talepler ekrandan kaldırılsın mı? (Geçmiş verileri korunur)')) return;
-            for (const req of allRequests.filter(r => r.status === 'completed' && !r.hidden)) {
-                try { await updateDoc(doc(db, 'requests', req.id), { hidden: true }); } catch(e) {}
+            if (!confirm('Tamamlanan tüm talepleri silmek istediğinizden emin misiniz?')) return;
+            for (const req of allRequests.filter(r => r.status === 'completed')) {
+                try { await deleteDoc(doc(db, 'requests', req.id)); } catch(e) {}
             }
-            showToast('✅ Temizlendi', 'Tamamlananlar gizlendi, geçmiş korundu.');
+            showToast('🗑️ Temizlendi', 'Tamamlanan talepler silindi.');
         };
 
         // ── REALTİME DİNLEYİCİ ───────────────────────────────────
@@ -836,6 +719,25 @@
 
         // Otomatik yenileme (kronometreler için)
         setInterval(() => { if (allRequests.length > 0) renderRequests(); }, 1000);
+
+        // Tamamlanan talepleri 10 dakika sonra otomatik sil
+        setInterval(async () => {
+            const TEN_MIN = 10 * 60 * 1000;
+            const now = Date.now();
+            const expired = allRequests.filter(r => {
+                if (r.status !== 'completed') return false;
+                // completedAt yoksa (eski kayıt) — hemen sil
+                if (!r.completedAt) return true;
+                // ISO string veya timestamp her iki formatta da parse et
+                const t = new Date(r.completedAt).getTime();
+                if (isNaN(t)) return true; // parse edilemiyorsa sil
+                return (now - t) >= TEN_MIN;
+            });
+            for (const req of expired) {
+                try { await deleteDoc(doc(db, 'requests', req.id)); } catch(e) {}
+            }
+            if (expired.length > 0) console.log(`🗑️ ${expired.length} eski talep silindi`);
+        }, 15 * 1000); // her 15 saniyede kontrol et
     </script>
 </body>
 </html>
