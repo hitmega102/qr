@@ -698,6 +698,7 @@
             document.getElementById('loading').style.display      = 'none';
             document.getElementById('mainContent').style.display  = 'block';
             renderRequests();
+            cleanupCompleted();
         }, err => {
             document.getElementById('loading').textContent = '⚠️ Bağlantı hatası. Sayfayı yenileyin.';
         });
@@ -721,23 +722,24 @@
         setInterval(() => { if (allRequests.length > 0) renderRequests(); }, 1000);
 
         // Tamamlanan talepleri 10 dakika sonra otomatik sil
-        setInterval(async () => {
+        // allRequests üzerinden çalışır — Firebase'e ekstra sorgu atmaz
+        async function cleanupCompleted() {
             const TEN_MIN = 10 * 60 * 1000;
             const now = Date.now();
             const expired = allRequests.filter(r => {
                 if (r.status !== 'completed') return false;
-                // completedAt yoksa (eski kayıt) — hemen sil
                 if (!r.completedAt) return true;
-                // ISO string veya timestamp her iki formatta da parse et
                 const t = new Date(r.completedAt).getTime();
-                if (isNaN(t)) return true; // parse edilemiyorsa sil
+                if (isNaN(t)) return true;
                 return (now - t) >= TEN_MIN;
             });
             for (const req of expired) {
                 try { await deleteDoc(doc(db, 'requests', req.id)); } catch(e) {}
             }
             if (expired.length > 0) console.log(`🗑️ ${expired.length} eski talep silindi`);
-        }, 15 * 1000); // her 15 saniyede kontrol et
+        }
+
+        setInterval(cleanupCompleted, 60 * 1000); // her 1 dakikada kontrol et
     </script>
 </body>
 </html>
