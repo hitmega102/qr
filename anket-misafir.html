@@ -173,7 +173,12 @@
                     <span class="question-icon">📝</span>
                     <span id="labelComments"></span>
                 </div>
-                <textarea class="comment-box" id="comments" placeholder="..."></textarea>
+                <textarea class="comment-box" id="comments" placeholder="..." maxlength="500"></textarea>
+            <div style="font-size:11px;color:#aaa;text-align:right;margin-top:4px" id="commentsCount">0 / 500</div>
+            </div>
+            <div id="kvkkBox" style="margin:16px 0;padding:14px 16px;background:#fff9ec;border:1px solid #f59e0b;border-radius:10px;display:flex;gap:12px;align-items:flex-start">
+                <input type="checkbox" id="kvkkCheck" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer">
+                <label for="kvkkCheck" id="kvkkLabel" style="font-size:13px;color:#555;line-height:1.5;cursor:pointer"></label>
             </div>
             <div class="loading" id="loading"><div class="spinner"></div></div>
             <button class="submit-btn" id="submitBtn" onclick="submitSurvey()"></button>
@@ -235,6 +240,8 @@ const LANGS = {
         errRoom:'Lütfen oda numaranızı girin!',
         errRating:'Lütfen en az bir departmana puan verin!',
         errSend:'Anket gönderilemedi. Lütfen tekrar deneyin.',
+        kvkkText:'Kişisel verilerimin (oda numarası ve yorumlarım) yalnızca hizmet kalitesini geliştirmek amacıyla işleneceğini, üçüncü kişilerle paylaşılmayacağını ve 1 yıl içinde silineceğini kabul ediyorum.',
+        kvkkErr:'Devam etmek için aydınlatma metnini onaylamanız gerekmektedir.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_tr}))
     },
     en: {
@@ -250,6 +257,8 @@ const LANGS = {
         errRoom:'Please enter your room number!',
         errRating:'Please rate at least one department!',
         errSend:'Survey could not be sent. Please try again.',
+        kvkkText:'I consent to my personal data (room number and comments) being processed solely to improve service quality, not shared with third parties, and deleted within 1 year.',
+        kvkkErr:'Please accept the data processing notice to continue.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_en}))
     },
     ru: {
@@ -265,6 +274,8 @@ const LANGS = {
         errRoom:'Пожалуйста, укажите номер вашей комнаты!',
         errRating:'Пожалуйста, оценьте хотя бы один отдел!',
         errSend:'Опрос не удалось отправить. Попробуйте снова.',
+        kvkkText:'Я согласен(а) на обработку моих персональных данных (номер комнаты и комментарии) исключительно для улучшения качества обслуживания, без передачи третьим лицам, с удалением в течение 1 года.',
+        kvkkErr:'Для продолжения необходимо принять уведомление об обработке данных.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_ru}))
     },
     de: {
@@ -280,6 +291,8 @@ const LANGS = {
         errRoom:'Bitte geben Sie Ihre Zimmernummer ein!',
         errRating:'Bitte bewerten Sie mindestens eine Abteilung!',
         errSend:'Die Umfrage konnte nicht gesendet werden.',
+        kvkkText:'Ich stimme zu, dass meine personenbezogenen Daten (Zimmernummer und Kommentare) ausschließlich zur Verbesserung der Servicequalität verarbeitet, nicht an Dritte weitergegeben und innerhalb von 1 Jahr gelöscht werden.',
+        kvkkErr:'Bitte akzeptieren Sie den Datenschutzhinweis, um fortzufahren.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_de}))
     },
     pl: {
@@ -295,6 +308,8 @@ const LANGS = {
         errRoom:'Proszę podać numer pokoju!',
         errRating:'Proszę ocenić przynajmniej jeden dział!',
         errSend:'Ankieta nie została wysłana. Spróbuj ponownie.',
+        kvkkText:'Wyrażam zgodę na przetwarzanie moich danych osobowych (numer pokoju i komentarze) wyłącznie w celu poprawy jakości usług, bez udostępniania osobom trzecim i z usunięciem w ciągu 1 roku.',
+        kvkkErr:'Aby kontynuować, zaakceptuj informację o przetwarzaniu danych.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_pl}))
     },
     cs: {
@@ -310,6 +325,8 @@ const LANGS = {
         errRoom:'Prosím, zadejte číslo místnosti!',
         errRating:'Prosím, ohodnoťte alespoň jednu oddělení!',
         errSend:'Průzkum nebyl odeslán. Zkuste znovu.',
+        kvkkText:'Souhlasím se zpracováním mých osobních údajů (číslo pokoje a komentáře) výhradně za účelem zlepšení kvality služeb, bez sdílení s třetími stranami a s odstraněním do 1 roku.',
+        kvkkErr:'Pro pokračování prosím přijměte oznámení o zpracování údajů.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_cs}))
     },
     fr: {
@@ -325,6 +342,8 @@ const LANGS = {
         errRoom:'Veuillez entrer votre numéro de chambre !',
         errRating:'Veuillez évaluer au moins un département !',
         errSend:'L\'enquête n\'a pas pu être envoyée.',
+        kvkkText:'J\'accepte que mes données personnelles (numéro de chambre et commentaires) soient traitées uniquement pour améliorer la qualité du service, sans partage avec des tiers et avec suppression dans 1 an.',
+        kvkkErr:'Veuillez accepter l\'avis de traitement des données pour continuer.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_fr}))
     },
     nl: {
@@ -340,6 +359,8 @@ const LANGS = {
         errRoom:'Voer uw kamernummer in!',
         errRating:'Beoordeel ten minste één afdeling!',
         errSend:'De enquête kon niet worden verzonden. Probeer opnieuw.',
+        kvkkText:'Ik ga akkoord met de verwerking van mijn persoonsgegevens (kamernummer en opmerkingen) uitsluitend ter verbetering van de servicekwaliteit, zonder deling met derden en met verwijdering binnen 1 jaar.',
+        kvkkErr:'Accepteer de verwerkingskennisgeving om door te gaan.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_da}))
     },
     ro: {
@@ -355,6 +376,8 @@ const LANGS = {
         errRoom:'Vă rugăm să introduceți numărul camerelor!',
         errRating:'Vă rugăm să evaluați cel puțin un departament!',
         errSend:'Sondajul nu a fost trimis. Încercați din nou.',
+        kvkkText:'Sunt de acord ca datele mele personale (numărul camerei și comentariile) să fie prelucrate exclusiv pentru îmbunătățirea calității serviciilor, fără a fi partajate cu terți și cu ștergere în decurs de 1 an.',
+        kvkkErr:'Vă rugăm să acceptați notificarea privind prelucrarea datelor pentru a continua.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_ro}))
     }
 };
@@ -383,6 +406,7 @@ function setLang(code) {
     document.getElementById('subtitleText').textContent  = L.subtitle;
     document.getElementById('labelRoom').textContent     = L.labelRoom;
     document.getElementById('labelComments').textContent = L.labelComments;
+    if (L.kvkkText) document.getElementById('kvkkLabel').textContent = L.kvkkText;
     document.getElementById('submitBtn').textContent     = L.btnSubmit;
     document.getElementById('successTitle').textContent  = L.successTitle;
     document.getElementById('successBody').textContent   = L.successBody;
@@ -433,6 +457,7 @@ window.submitSurvey = async function() {
     const L = LANGS[currentLang];
     const room  = document.getElementById('roomNumber').value.trim();
     if (!room) return showError(L.errRoom);
+    if (!document.getElementById('kvkkCheck').checked) return showError(L.kvkkErr || 'Lütfen aydınlatma metnini onaylayın.');
     if (!Object.values(ratings).some(r => r > 0))   return showError(L.errRating);
 
     const btn = document.getElementById('submitBtn');
@@ -490,6 +515,15 @@ function hideError() { document.getElementById('errorMessage').classList.remove(
     // Dil
     currentLang = detectLang();
     setLang(currentLang);
+
+    // Karakter sayacı
+    const commentsEl = document.getElementById('comments');
+    const countEl = document.getElementById('commentsCount');
+    if (commentsEl && countEl) {
+        commentsEl.addEventListener('input', () => {
+            countEl.textContent = commentsEl.value.length + ' / 500';
+        });
+    }
 })();
 </script>
 </body>
