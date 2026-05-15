@@ -166,13 +166,7 @@
                 </div>
                 <input type="text" id="roomNumber" class="input-field" placeholder="101">
             </div>
-            <div class="question">
-                <div class="question-title">
-                    <span class="question-icon">📧</span>
-                    <span id="labelEmail"></span>
-                </div>
-                <input type="email" id="emailAddress" class="input-field" placeholder="ornek@email.com">
-            </div>
+
             <div id="deptQuestions"></div>
             <div class="question">
                 <div class="question-title">
@@ -232,15 +226,13 @@ const LANGS = {
         code:'tr', name:'TR',
         title:'🏨 Misafir Memnuniyet Anketi',
         subtitle:'Görüşleriniz bizim için çok değerli!',
-        labelRoom:'Oda Numaranız', labelEmail:'E-posta Adresiniz',
+        labelRoom:'Oda Numaranız',
         labelComments:'Önerileriniz ve Yorumlarınız',
         btnSubmit:'Anketi Gönder',
         successTitle:'Teşekkür Ederiz!',
         successBody:'Görüşleriniz bizim için çok değerli. Daha iyi bir hizmet sunabilmek için geri bildirimlerinizi dikkate alacağız.',
         successFooter:'Keyifli konaklama dileriz! 🏨',
         errRoom:'Lütfen oda numaranızı girin!',
-        errEmail:'Lütfen e-posta adresinizi girin!',
-        errEmailFmt:'Lütfen geçerli bir e-posta adresi girin!',
         errRating:'Lütfen en az bir departmana puan verin!',
         errSend:'Anket gönderilemedi. Lütfen tekrar deneyin.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_tr}))
@@ -249,15 +241,13 @@ const LANGS = {
         code:'en', name:'EN',
         title:'🏨 Guest Satisfaction Survey',
         subtitle:'Your feedback is very important to us!',
-        labelRoom:'Room Number', labelEmail:'Your Email Address',
+        labelRoom:'Room Number',
         labelComments:'Suggestions & Comments',
         btnSubmit:'Submit Survey',
         successTitle:'Thank You!',
         successBody:'Your feedback is very valuable to us. We will take your comments into account to provide better service.',
         successFooter:'Enjoy your stay! 🏨',
         errRoom:'Please enter your room number!',
-        errEmail:'Please enter your email address!',
-        errEmailFmt:'Please enter a valid email address!',
         errRating:'Please rate at least one department!',
         errSend:'Survey could not be sent. Please try again.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_en}))
@@ -266,15 +256,13 @@ const LANGS = {
         code:'ru', name:'RU',
         title:'🏨 Опрос удовлетворённости гостей',
         subtitle:'Ваши отзывы очень важны для нас!',
-        labelRoom:'Номер комнаты', labelEmail:'Ваш адрес электронной почты',
+        labelRoom:'Номер комнаты',
         labelComments:'Предложения и комментарии',
         btnSubmit:'Отправить опрос',
         successTitle:'Спасибо!',
         successBody:'Ваши отзывы очень ценны для нас. Мы учтём ваши комментарии для улучшения качества обслуживания.',
         successFooter:'Приятного пребывания! 🏨',
         errRoom:'Пожалуйста, укажите номер вашей комнаты!',
-        errEmail:'Пожалуйста, укажите адрес электронной почты!',
-        errEmailFmt:'Пожалуйста, укажите корректный адрес!',
         errRating:'Пожалуйста, оценьте хотя бы один отдел!',
         errSend:'Опрос не удалось отправить. Попробуйте снова.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_ru}))
@@ -283,15 +271,13 @@ const LANGS = {
         code:'de', name:'DE',
         title:'🏨 Gäste-Zufriedenheitsbefragung',
         subtitle:'Ihre Rückmeldung ist sehr wichtig für uns!',
-        labelRoom:'Zimmernummer', labelEmail:'Ihre E-Mail-Adresse',
+        labelRoom:'Zimmernummer',
         labelComments:'Vorschläge und Kommentare',
         btnSubmit:'Umfrage senden',
         successTitle:'Vielen Dank!',
         successBody:'Ihre Rückmeldung ist sehr wertvoll. Wir werden Ihre Kommentare berücksichtigen.',
         successFooter:'Genießen Sie Ihren Aufenthalt! 🏨',
         errRoom:'Bitte geben Sie Ihre Zimmernummer ein!',
-        errEmail:'Bitte geben Sie Ihre E-Mail-Adresse ein!',
-        errEmailFmt:'Bitte geben Sie eine gültige E-Mail ein!',
         errRating:'Bitte bewerten Sie mindestens eine Abteilung!',
         errSend:'Die Umfrage konnte nicht gesendet werden.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_de}))
@@ -300,15 +286,13 @@ const LANGS = {
         code:'pl', name:'PL',
         title:'🏨 Ankieta satysfakcji gości',
         subtitle:'Wasze opinie są dla nas bardzo ważne!',
-        labelRoom:'Numer pokoju', labelEmail:'Twój adres e-mail',
+        labelRoom:'Numer pokoju',
         labelComments:'Sugestie i komentarze',
         btnSubmit:'Wyślij ankietę',
         successTitle:'Dziękujemy!',
         successBody:'Wasze opinie są bardzo cenne. Uwzględnimy wasze komentarze.',
         successFooter:'Miło spędzić czas! 🏨',
         errRoom:'Proszę podać numer pokoju!',
-        errEmail:'Proszę podać adres e-mail!',
-        errEmailFmt:'Proszę podać poprawny adres e-mail!',
         errRating:'Proszę ocenić przynajmniej jeden dział!',
         errSend:'Ankieta nie została wysłana. Spróbuj ponownie.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_pl}))
@@ -317,15 +301,13 @@ const LANGS = {
         code:'cs', name:'CZ',
         title:'🏨 Průzkum spokojnosti hosté',
         subtitle:'Vaše zpětná vazba je pro nás hodně důležitá!',
-        labelRoom:'Číslo místnosti', labelEmail:'Váš e-mailový adresa',
+        labelRoom:'Číslo místnosti',
         labelComments:'Návrhy a komentáře',
         btnSubmit:'Odeslat průzkum',
         successTitle:'Děkujeme!',
         successBody:'Vaše zpětná vazba je pro nás hodně cenná.',
         successFooter:'Příjemný pobyt! 🏨',
         errRoom:'Prosím, zadejte číslo místnosti!',
-        errEmail:'Prosím, zadejte e-mailovou adresu!',
-        errEmailFmt:'Prosím, zadejte platnou e-mailovou adresu!',
         errRating:'Prosím, ohodnoťte alespoň jednu oddělení!',
         errSend:'Průzkum nebyl odeslán. Zkuste znovu.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_cs}))
@@ -334,15 +316,13 @@ const LANGS = {
         code:'fr', name:'FR',
         title:'🏨 Enquête de satisfaction des hôtes',
         subtitle:'Vos avis sont très importants pour nous !',
-        labelRoom:'Numéro de chambre', labelEmail:'Votre adresse e-mail',
+        labelRoom:'Numéro de chambre',
         labelComments:'Suggestions et commentaires',
         btnSubmit:'Envoyer l\'enquête',
         successTitle:'Merci !',
         successBody:'Vos avis sont très précieux pour nous.',
         successFooter:'Profitez de votre séjour ! 🏨',
         errRoom:'Veuillez entrer votre numéro de chambre !',
-        errEmail:'Veuillez entrer votre adresse e-mail !',
-        errEmailFmt:'Veuillez entrer une adresse e-mail valide !',
         errRating:'Veuillez évaluer au moins un département !',
         errSend:'L\'enquête n\'a pas pu être envoyée.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_fr}))
@@ -351,15 +331,13 @@ const LANGS = {
         code:'nl', name:'NL',
         title:'🏨 Gasttevredenheidsonderzoek',
         subtitle:'Uw feedback is erg belangrijk voor ons!',
-        labelRoom:'Kamernummer', labelEmail:'Uw e-mailadres',
+        labelRoom:'Kamernummer',
         labelComments:'Suggesties en opmerkingen',
         btnSubmit:'Enquête verzenden',
         successTitle:'Dank u!',
         successBody:'Uw feedback is erg waardevol voor ons. We zullen uw opmerkingen in overweging nemen.',
         successFooter:'Geniet van uw verblijf! 🏨',
         errRoom:'Voer uw kamernummer in!',
-        errEmail:'Voer uw e-mailadres in!',
-        errEmailFmt:'Voer een geldig e-mailadres in!',
         errRating:'Beoordeel ten minste één afdeling!',
         errSend:'De enquête kon niet worden verzonden. Probeer opnieuw.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_da}))
@@ -368,15 +346,13 @@ const LANGS = {
         code:'ro', name:'RO',
         title:'🏨 Sondaj de satisfacție',
         subtitle:'Opiniile dumneavoastră sunt foart importante!',
-        labelRoom:'Numărul camerelor', labelEmail:'Adresa de e-mail',
+        labelRoom:'Numărul camerelor',
         labelComments:'Sugestii și comentarii',
         btnSubmit:'Trimiteți sondajul',
         successTitle:'Mulțumim!',
         successBody:'Opiniile dumneavoastră sunt foart prețioase.',
         successFooter:'Bucurați-vă de șederea dumneavoastră! 🏨',
         errRoom:'Vă rugăm să introduceți numărul camerelor!',
-        errEmail:'Vă rugăm să introduceți adresa de e-mail!',
-        errEmailFmt:'Vă rugăm să introduceți o adresă validă!',
         errRating:'Vă rugăm să evaluați cel puțin un departament!',
         errSend:'Sondajul nu a fost trimis. Încercați din nou.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_ro}))
@@ -406,7 +382,6 @@ function setLang(code) {
     document.getElementById('titleText').textContent     = L.title;
     document.getElementById('subtitleText').textContent  = L.subtitle;
     document.getElementById('labelRoom').textContent     = L.labelRoom;
-    document.getElementById('labelEmail').textContent    = L.labelEmail;
     document.getElementById('labelComments').textContent = L.labelComments;
     document.getElementById('submitBtn').textContent     = L.btnSubmit;
     document.getElementById('successTitle').textContent  = L.successTitle;
@@ -457,11 +432,7 @@ function renderDeptQuestions() {
 window.submitSurvey = async function() {
     const L = LANGS[currentLang];
     const room  = document.getElementById('roomNumber').value.trim();
-    const email = document.getElementById('emailAddress').value.trim();
-
-    if (!room)  return showError(L.errRoom);
-    if (!email) return showError(L.errEmail);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showError(L.errEmailFmt);
+    if (!room) return showError(L.errRoom);
     if (!Object.values(ratings).some(r => r > 0))   return showError(L.errRating);
 
     const btn = document.getElementById('submitBtn');
@@ -480,7 +451,6 @@ window.submitSurvey = async function() {
 
         const payload = {
             room_number: room,
-            email: email,
             comments: document.getElementById('comments').value || null,
             ratings: ratingsObj
         };
