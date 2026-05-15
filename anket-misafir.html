@@ -176,9 +176,28 @@
                 <textarea class="comment-box" id="comments" placeholder="..." maxlength="500"></textarea>
             <div style="font-size:11px;color:#aaa;text-align:right;margin-top:4px" id="commentsCount">0 / 500</div>
             </div>
-            <div id="kvkkBox" style="margin:16px 0;padding:14px 16px;background:#fff9ec;border:1px solid #f59e0b;border-radius:10px;display:flex;gap:12px;align-items:flex-start">
-                <input type="checkbox" id="kvkkCheck" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer">
-                <label for="kvkkCheck" id="kvkkLabel" style="font-size:13px;color:#555;line-height:1.5;cursor:pointer"></label>
+            <!-- KVKK: Aydınlatma + Rıza (ayrı) -->
+            <div style="margin:16px 0;padding:14px 16px;background:#fff9ec;border:1px solid #f59e0b;border-radius:10px">
+                <div style="font-size:13px;color:#555;margin-bottom:10px;line-height:1.5" id="kvkkSummary"></div>
+                <button type="button" onclick="openKvkkModal()" id="kvkkReadBtn" style="font-size:12px;color:#667eea;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:12px;display:block"></button>
+                <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+                    <input type="checkbox" id="kvkkCheck" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;cursor:pointer">
+                    <label for="kvkkCheck" id="kvkkConsentLabel" style="font-size:13px;color:#444;line-height:1.5;cursor:pointer"></label>
+                </div>
+            </div>
+
+            <!-- KVKK Modal -->
+            <div id="kvkkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px">
+                <div style="background:white;border-radius:16px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+                    <div style="padding:20px 24px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:white;border-radius:16px 16px 0 0">
+                        <h3 id="kvkkModalTitle" style="font-size:16px;color:#333;font-weight:700"></h3>
+                        <button onclick="closeKvkkModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1">✕</button>
+                    </div>
+                    <div id="kvkkModalBody" style="padding:20px 24px;font-size:13px;color:#444;line-height:1.8"></div>
+                    <div style="padding:16px 24px;border-top:1px solid #f0f0f0;text-align:right">
+                        <button onclick="closeKvkkModal()" id="kvkkCloseBtn" style="padding:10px 24px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer"></button>
+                    </div>
+                </div>
             </div>
             <div class="loading" id="loading"><div class="spinner"></div></div>
             <button class="submit-btn" id="submitBtn" onclick="submitSurvey()"></button>
@@ -240,8 +259,12 @@ const LANGS = {
         errRoom:'Lütfen oda numaranızı girin!',
         errRating:'Lütfen en az bir departmana puan verin!',
         errSend:'Anket gönderilemedi. Lütfen tekrar deneyin.',
-        kvkkText:'Kişisel verilerimin (oda numarası ve yorumlarım) yalnızca hizmet kalitesini geliştirmek amacıyla işleneceğini, üçüncü kişilerle paylaşılmayacağını ve 1 yıl içinde silineceğini kabul ediyorum.',
-        kvkkErr:'Devam etmek için aydınlatma metnini onaylamanız gerekmektedir.',
+        kvkkSummary:'Ankete katılmadan önce kişisel verilerinizin nasıl işlendiğini öğrenin.',
+        kvkkReadMore:'📄 Aydınlatma Metnini Oku',
+        kvkkConsent:'Kişisel verilerimin yukarıda belirtilen şekilde işlenmesine açık rıza veriyorum.',
+        kvkkModalTitle:'Kişisel Verilerin Korunması Aydınlatma Metni',
+        kvkkModalBody:'<p><strong>Veri Sorumlusu:</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>Hangi veriler işleniyor?</strong><br>Oda numaranız, departman değerlendirmeleriniz (yıldız puanları) ve isteğe bağlı olarak yazdığınız yorumlar.</p>\n<br><p><strong>Neden işleniyor?</strong><br>Hizmet kalitesini ölçmek ve iyileştirmek amacıyla. Verileriniz pazarlama, profilleme veya üçüncü kişilerle paylaşma amacıyla kullanılmaz.</p>\n<br><p><strong>Ne kadar saklanıyor?</strong><br>Anket verileri 1 yıl sonra otomatik olarak silinir.</p>\n<br><p><strong>Üçüncü kişilerle paylaşılıyor mu?</strong><br>Hayır. Verileriniz yalnızca otel yönetimi tarafından görüntülenir.</p>\n<br><p><strong>Haklarınız (KVKK Madde 11):</strong><br>Verilerinize erişim, düzeltme, silme, işlemenin kısıtlanması ve itiraz etme haklarına sahipsiniz. Talepleriniz için: <em>info@noxinndeluxe.com</em></p>\n<br><p><strong>Hukuki Dayanak:</strong> Açık rıza (KVKK Madde 5/1)</p>',
+        kvkkClose:'Anladım, Kapat',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_tr}))
     },
     en: {
@@ -257,8 +280,12 @@ const LANGS = {
         errRoom:'Please enter your room number!',
         errRating:'Please rate at least one department!',
         errSend:'Survey could not be sent. Please try again.',
-        kvkkText:'I consent to my personal data (room number and comments) being processed solely to improve service quality, not shared with third parties, and deleted within 1 year.',
-        kvkkErr:'Please accept the data processing notice to continue.',
+        kvkkSummary:'Before participating, learn how your personal data is processed.',
+        kvkkReadMore:'📄 Read Privacy Notice',
+        kvkkConsent:'I give my explicit consent to the processing of my personal data as described above.',
+        kvkkModalTitle:'Personal Data Protection Notice',
+        kvkkModalBody:'<p><strong>Data Controller:</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>What data is collected?</strong><br>Your room number, department ratings (star scores) and optional written comments.</p>\n<br><p><strong>Why is it processed?</strong><br>To measure and improve service quality. Your data is not used for marketing, profiling or sharing with third parties.</p>\n<br><p><strong>How long is it stored?</strong><br>Survey data is automatically deleted after 1 year.</p>\n<br><p><strong>Is it shared with third parties?</strong><br>No. Your data is only accessible to hotel management.</p>\n<br><p><strong>Your rights:</strong><br>You have the right to access, correct, delete, restrict processing and object to the use of your data. Contact: <em>info@noxinndeluxe.com</em></p>\n<br><p><strong>Legal basis:</strong> Explicit consent</p>',
+        kvkkClose:'Understood, Close',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_en}))
     },
     ru: {
@@ -274,8 +301,12 @@ const LANGS = {
         errRoom:'Пожалуйста, укажите номер вашей комнаты!',
         errRating:'Пожалуйста, оценьте хотя бы один отдел!',
         errSend:'Опрос не удалось отправить. Попробуйте снова.',
-        kvkkText:'Я согласен(а) на обработку моих персональных данных (номер комнаты и комментарии) исключительно для улучшения качества обслуживания, без передачи третьим лицам, с удалением в течение 1 года.',
-        kvkkErr:'Для продолжения необходимо принять уведомление об обработке данных.',
+        kvkkSummary:'Перед участием ознакомьтесь с порядком обработки ваших персональных данных.',
+        kvkkReadMore:'📄 Читать уведомление о конфиденциальности',
+        kvkkConsent:'Я даю явное согласие на обработку моих персональных данных, как описано выше.',
+        kvkkModalTitle:'Уведомление о защите персональных данных',
+        kvkkModalBody:'<p><strong>Оператор данных:</strong> Noxinn Deluxe Hotel, Коноклы / Анталья</p>\n<br><p><strong>Какие данные собираются?</strong><br>Номер вашей комнаты, оценки отделов и необязательные комментарии.</p>\n<br><p><strong>Цель обработки:</strong><br>Измерение и улучшение качества обслуживания. Данные не используются для маркетинга или передачи третьим лицам.</p>\n<br><p><strong>Срок хранения:</strong><br>Данные автоматически удаляются через 1 год.</p>\n<br><p><strong>Передача третьим лицам:</strong><br>Нет. Данные доступны только руководству отеля.</p>\n<br><p><strong>Ваши права:</strong><br>Вы имеете право на доступ, исправление, удаление данных и возражение против их обработки. Контакт: <em>info@noxinndeluxe.com</em></p>',
+        kvkkClose:'Понятно, закрыть',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_ru}))
     },
     de: {
@@ -291,8 +322,12 @@ const LANGS = {
         errRoom:'Bitte geben Sie Ihre Zimmernummer ein!',
         errRating:'Bitte bewerten Sie mindestens eine Abteilung!',
         errSend:'Die Umfrage konnte nicht gesendet werden.',
-        kvkkText:'Ich stimme zu, dass meine personenbezogenen Daten (Zimmernummer und Kommentare) ausschließlich zur Verbesserung der Servicequalität verarbeitet, nicht an Dritte weitergegeben und innerhalb von 1 Jahr gelöscht werden.',
-        kvkkErr:'Bitte akzeptieren Sie den Datenschutzhinweis, um fortzufahren.',
+        kvkkSummary:'Erfahren Sie vor der Teilnahme, wie Ihre persönlichen Daten verarbeitet werden.',
+        kvkkReadMore:'📄 Datenschutzhinweis lesen',
+        kvkkConsent:'Ich stimme der Verarbeitung meiner personenbezogenen Daten wie oben beschrieben ausdrücklich zu.',
+        kvkkModalTitle:'Datenschutzhinweis',
+        kvkkModalBody:'<p><strong>Verantwortlicher:</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>Welche Daten werden erhoben?</strong><br>Ihre Zimmernummer, Abteilungsbewertungen und optionale Kommentare.</p>\n<br><p><strong>Zweck der Verarbeitung:</strong><br>Messung und Verbesserung der Servicequalität. Keine Weitergabe an Dritte.</p>\n<br><p><strong>Speicherdauer:</strong><br>Daten werden nach 1 Jahr automatisch gelöscht.</p>\n<br><p><strong>Ihre Rechte:</strong><br>Auskunft, Berichtigung, Löschung, Einschränkung und Widerspruch. Kontakt: <em>info@noxinndeluxe.com</em></p>',
+        kvkkClose:'Verstanden, Schließen',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_de}))
     },
     pl: {
@@ -308,8 +343,12 @@ const LANGS = {
         errRoom:'Proszę podać numer pokoju!',
         errRating:'Proszę ocenić przynajmniej jeden dział!',
         errSend:'Ankieta nie została wysłana. Spróbuj ponownie.',
-        kvkkText:'Wyrażam zgodę na przetwarzanie moich danych osobowych (numer pokoju i komentarze) wyłącznie w celu poprawy jakości usług, bez udostępniania osobom trzecim i z usunięciem w ciągu 1 roku.',
-        kvkkErr:'Aby kontynuować, zaakceptuj informację o przetwarzaniu danych.',
+        kvkkSummary:'Przed udziałem dowiedz się, jak przetwarzane są Twoje dane osobowe.',
+        kvkkReadMore:'📄 Przeczytaj informację o prywatności',
+        kvkkConsent:'Wyrażam wyraźną zgodę na przetwarzanie moich danych osobowych zgodnie z powyższym opisem.',
+        kvkkModalTitle:'Informacja o ochronie danych osobowych',
+        kvkkModalBody:'<p><strong>Administrator danych:</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>Jakie dane są zbierane?</strong><br>Numer pokoju, oceny działów i opcjonalne komentarze.</p>\n<br><p><strong>Cel przetwarzania:</strong><br>Pomiar i poprawa jakości usług. Brak udostępniania osobom trzecim.</p>\n<br><p><strong>Okres przechowywania:</strong><br>Dane są automatycznie usuwane po 1 roku.</p>\n<br><p><strong>Twoje prawa:</strong><br>Dostęp, sprostowanie, usunięcie, ograniczenie i sprzeciw. Kontakt: <em>info@noxinndeluxe.com</em></p>',
+        kvkkClose:'Rozumiem, Zamknij',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_pl}))
     },
     cs: {
@@ -325,8 +364,12 @@ const LANGS = {
         errRoom:'Prosím, zadejte číslo místnosti!',
         errRating:'Prosím, ohodnoťte alespoň jednu oddělení!',
         errSend:'Průzkum nebyl odeslán. Zkuste znovu.',
-        kvkkText:'Souhlasím se zpracováním mých osobních údajů (číslo pokoje a komentáře) výhradně za účelem zlepšení kvality služeb, bez sdílení s třetími stranami a s odstraněním do 1 roku.',
-        kvkkErr:'Pro pokračování prosím přijměte oznámení o zpracování údajů.',
+        kvkkSummary:'Před účastí se seznamte se zpracováním vašich osobních údajů.',
+        kvkkReadMore:'📄 Přečíst oznámení o ochraně soukromí',
+        kvkkConsent:'Výslovně souhlasím se zpracováním mých osobních údajů, jak je popsáno výše.',
+        kvkkModalTitle:'Oznámení o ochraně osobních údajů',
+        kvkkModalBody:'<p><strong>Správce údajů:</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>Jaké údaje se sbírají?</strong><br>Číslo pokoje, hodnocení oddělení a volitelné komentáře.</p>\n<br><p><strong>Účel zpracování:</strong><br>Měření a zlepšování kvality služeb. Bez sdílení s třetími stranami.</p>\n<br><p><strong>Doba uchování:</strong><br>Data jsou automaticky smazána po 1 roce.</p>\n<br><p><strong>Vaše práva:</strong><br>Přístup, oprava, výmaz, omezení a námitka. Kontakt: <em>info@noxinndeluxe.com</em></p>',
+        kvkkClose:'Rozumím, Zavřít',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_cs}))
     },
     fr: {
@@ -344,6 +387,12 @@ const LANGS = {
         errSend:'L\'enquête n\'a pas pu être envoyée.',
         kvkkText:'J\'accepte que mes données personnelles (numéro de chambre et commentaires) soient traitées uniquement pour améliorer la qualité du service, sans partage avec des tiers et avec suppression dans 1 an.',
         kvkkErr:'Veuillez accepter l\'avis de traitement des données pour continuer.',
+        kvkkSummary:'Avant de participer, découvrez comment vos données personnelles sont traitées.',
+        kvkkReadMore:'📄 Lire la notice de confidentialité',
+        kvkkConsent:'Je donne mon consentement explicite au traitement de mes données personnelles tel que décrit ci-dessus.',
+        kvkkModalTitle:'Notice de protection des données personnelles',
+        kvkkModalBody:'<p><strong>Responsable du traitement :</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>Quelles données sont collectées ?</strong><br>Votre numéro de chambre, évaluations des départements et commentaires optionnels.</p>\n<br><p><strong>Finalité :</strong><br>Mesure et amélioration de la qualité du service. Aucun partage avec des tiers.</p>\n<br><p><strong>Durée de conservation :</strong><br>Les données sont automatiquement supprimées après 1 an.</p>\n<br><p><strong>Vos droits :</strong><br>Accès, rectification, effacement, limitation et opposition. Contact : <em>info@noxinndeluxe.com</em></p>',
+        kvkkClose:'Compris, Fermer',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_fr}))
     },
     nl: {
@@ -359,8 +408,12 @@ const LANGS = {
         errRoom:'Voer uw kamernummer in!',
         errRating:'Beoordeel ten minste één afdeling!',
         errSend:'De enquête kon niet worden verzonden. Probeer opnieuw.',
-        kvkkText:'Ik ga akkoord met de verwerking van mijn persoonsgegevens (kamernummer en opmerkingen) uitsluitend ter verbetering van de servicekwaliteit, zonder deling met derden en met verwijdering binnen 1 jaar.',
-        kvkkErr:'Accepteer de verwerkingskennisgeving om door te gaan.',
+        kvkkSummary:'Lees voor deelname hoe uw persoonsgegevens worden verwerkt.',
+        kvkkReadMore:'📄 Privacyverklaring lezen',
+        kvkkConsent:'Ik geef uitdrukkelijk toestemming voor de verwerking van mijn persoonsgegevens zoals hierboven beschreven.',
+        kvkkModalTitle:'Privacyverklaring',
+        kvkkModalBody:'<p><strong>Verwerkingsverantwoordelijke:</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>Welke gegevens worden verzameld?</strong><br>Uw kamernummer, afdelingswaarderingen en optionele opmerkingen.</p>\n<br><p><strong>Doel:</strong><br>Meting en verbetering van de servicekwaliteit. Geen deling met derden.</p>\n<br><p><strong>Bewaartermijn:</strong><br>Gegevens worden na 1 jaar automatisch verwijderd.</p>\n<br><p><strong>Uw rechten:</strong><br>Inzage, correctie, verwijdering, beperking en bezwaar. Contact: <em>info@noxinndeluxe.com</em></p>',
+        kvkkClose:'Begrepen, Sluiten',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_da}))
     },
     ro: {
@@ -376,8 +429,13 @@ const LANGS = {
         errRoom:'Vă rugăm să introduceți numărul camerelor!',
         errRating:'Vă rugăm să evaluați cel puțin un departament!',
         errSend:'Sondajul nu a fost trimis. Încercați din nou.',
-        kvkkText:'Sunt de acord ca datele mele personale (numărul camerei și comentariile) să fie prelucrate exclusiv pentru îmbunătățirea calității serviciilor, fără a fi partajate cu terți și cu ștergere în decurs de 1 an.',
-        kvkkErr:'Vă rugăm să acceptați notificarea privind prelucrarea datelor pentru a continua.',
+        kvkkSummary:'Înainte de participare, aflați cum sunt prelucrate datele dvs. personale.',
+        kvkkReadMore:'📄 Citiți notificarea de confidențialitate',
+        kvkkConsent:'Îmi dau consimțământul explicit pentru prelucrarea datelor mele personale, conform descrierii de mai sus.',
+        kvkkModalTitle:'Notificare privind protecția datelor cu caracter personal',
+        kvkkModalBody:'<p><strong>Operator de date:</strong> Noxinn Deluxe Hotel, Konaklı / Antalya</p>\n<br><p><strong>Ce date sunt colectate?</strong><br>Numărul camerei, evaluările departamentelor și comentariile opționale.</p>\n<br><p><strong>Scopul prelucrării:</strong><br>Măsurarea și îmbunătățirea calității serviciilor. Fără partajare cu terți.</p>\n<br><p><strong>Durata stocării:</strong><br>Datele sunt șterse automat după 1 an.</p>\n<br><p><strong>Drepturile dvs.:</strong><br>Acces, rectificare, ștergere, restricție și opoziție. Contact: <em>info@noxinndeluxe.com</em></p>',
+        kvkkClose:'Am înțeles, Închide',
+        kvkkErr:'Vă rugăm să consimțiți la prelucrarea datelor pentru a continua.',
         getDepts: () => QUESTIONS_DB.map(q => ({key: q.key, icon: q.icon, name: q.name_ro}))
     }
 };
@@ -406,7 +464,9 @@ function setLang(code) {
     document.getElementById('subtitleText').textContent  = L.subtitle;
     document.getElementById('labelRoom').textContent     = L.labelRoom;
     document.getElementById('labelComments').textContent = L.labelComments;
-    if (L.kvkkText) document.getElementById('kvkkLabel').textContent = L.kvkkText;
+    if (L.kvkkSummary) document.getElementById('kvkkSummary').textContent = L.kvkkSummary;
+    if (L.kvkkReadMore) document.getElementById('kvkkReadBtn').textContent = L.kvkkReadMore;
+    if (L.kvkkConsent) document.getElementById('kvkkConsentLabel').textContent = L.kvkkConsent;
     document.getElementById('submitBtn').textContent     = L.btnSubmit;
     document.getElementById('successTitle').textContent  = L.successTitle;
     document.getElementById('successBody').textContent   = L.successBody;
@@ -477,7 +537,9 @@ window.submitSurvey = async function() {
         const payload = {
             room_number: room,
             comments: document.getElementById('comments').value || null,
-            ratings: ratingsObj
+            ratings: ratingsObj,
+            kvkk_consent_at: new Date().toISOString(),
+            consent_lang: currentLang
         };
 
         const { error } = await supabase.from('surveys').insert([payload]);
@@ -492,6 +554,17 @@ window.submitSurvey = async function() {
     } finally {
         document.getElementById('loading').classList.remove('show');
     }
+}
+
+window.openKvkkModal = function() {
+    const L = LANGS[currentLang];
+    document.getElementById('kvkkModalTitle').textContent = L.kvkkModalTitle || 'Gizlilik Bildirimi';
+    document.getElementById('kvkkModalBody').innerHTML = L.kvkkModalBody || '';
+    document.getElementById('kvkkCloseBtn').textContent = L.kvkkClose || 'Kapat';
+    document.getElementById('kvkkModal').style.display = 'flex';
+}
+window.closeKvkkModal = function() {
+    document.getElementById('kvkkModal').style.display = 'none';
 }
 
 function showError(msg) {
