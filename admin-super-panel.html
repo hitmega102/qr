@@ -232,8 +232,8 @@ window.toggleSelectAll = function(checkbox) {
     }
 }
 
-window.deleteSurvey = async function(surveyId, email) {
-    if (!confirm(`"${email}" adresine ait anketi silmek istediğinize emin misiniz?`)) {
+window.deleteSurvey = async function(surveyId, _unused) {
+    if (!confirm('Bu anketi silmek istediğinize emin misiniz?')) {
         return;
     }
     
@@ -622,8 +622,8 @@ window.toggleSelectAll = function(checkbox) {
     }
 }
 
-window.deleteSurvey = async function(surveyId, email) {
-    if (!confirm(`"${email}" adresine ait anketi silmek istediğinize emin misiniz?`)) {
+window.deleteSurvey = async function(surveyId, _unused) {
+    if (!confirm('Bu anketi silmek istediğinize emin misiniz?')) {
         return;
     }
     
@@ -1012,8 +1012,8 @@ window.toggleSelectAll = function(checkbox) {
     }
 }
 
-window.deleteSurvey = async function(surveyId, email) {
-    if (!confirm(`"${email}" adresine ait anketi silmek istediğinize emin misiniz?`)) {
+window.deleteSurvey = async function(surveyId, _unused) {
+    if (!confirm('Bu anketi silmek istediğinize emin misiniz?')) {
         return;
     }
     
@@ -1923,7 +1923,7 @@ Müşterilere gönderilecek Google yorum isteği mailinin içeriğini düzenleyi
   <div style="display:flex;flex-direction:column;gap:13px">
     <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Restoran *</label>
       <select id="acResRestaurantSel" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></select></div>
-    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Misafir Adı *</label>
+    <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Misafir Adı * <span style="font-weight:400;color:#aaa;font-size:11px">(yalnızca operasyonel amaçla)</span></label>
       <input id="acResGuest" type="text" placeholder="Ad Soyad" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
     <div><label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:5px">Oda No</label>
       <input id="acResRoom" type="text" placeholder="Ör: 215" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px"></div>
@@ -2330,15 +2330,15 @@ window.login = async function(){
         const hash=await sha256(pass);
         const{data,error}=await supabase.from('users').select('*').eq('username',user).eq('password_hash',hash).single();
         if(error||!data)return showLoginError('Kullanıcı adı veya şifre yanlış!');
-        curUser=data;
-        sessionStorage.setItem('hotel_user',JSON.stringify(curUser));
+        curUser={username:data.username,role:data.role,id:data.id}; // password_hash saklanmıyor
+        sessionStorage.setItem('hotel_user',JSON.stringify({username:curUser.username,role:curUser.role,id:curUser.id}));
         showPanel();
     }catch(e){console.error(e);showLoginError('Bağlantı hatası!');}finally{btn.disabled=false;}
 }
 
 function showLoginError(msg){const el=document.getElementById('loginError');el.textContent='⚠️ '+msg;el.classList.add('show')}
 
-function checkSession(){const stored=sessionStorage.getItem('hotel_user');if(stored){try{curUser=JSON.parse(stored);showPanel();return true}catch(e){}}return false}
+function checkSession(){const stored=sessionStorage.getItem('hotel_user');if(stored){try{const _s=JSON.parse(stored);curUser={username:_s.username,role:_s.role,id:_s.id};showPanel();return true}catch(e){}}return false}
 
 async function showPanel(){
     document.getElementById('loginScreen').style.display='none';
@@ -2561,10 +2561,10 @@ function renderSurveyCard(s){
             </div>
             <div style="text-align:right">
                 <div class="date-badge">${time}</div>
-                ${s.email?`<div class="date-badge" style="margin-top:4px">📧 ${s.email}</div>`:''}
+
                 <div class="badge-row" style="justify-content:flex-end;margin-top:6px">
                     ${isAdmin?`<button class="btn btn-danger" onclick="deleteSurvey('${s.id}','${s.room_number}')">Sil</button>`:''}
-                    ${isHighScore&&s.email?`<button class="btn btn-info" onclick="openReviewModal('${s.email}','${s.room_number}')">⭐</button>`:''}
+                    ${isHighScore?`<button class="btn btn-info" onclick="openReviewModal('','${s.room_number}')">⭐</button>`:''}
                     <button class="btn btn-primary" onclick="analyzeWithAI('${s.id}', this)">🤖 Analiz Et</button>
                 </div>
             </div>
@@ -2592,7 +2592,7 @@ window.deleteSurvey=async function(id,room){
 
 function renderEmails(){
     const el=document.getElementById('emailsTable');
-    const emails=allSurveys.filter(s=>s.email);
+    const emails=allSurveys;
     selectedSurveyIds.clear();
     document.getElementById('bulkActions').classList.remove('show');
     if(!emails.length){el.innerHTML='<div class="empty-state"><div class="e-icon">📧</div><h2>E-posta yok</h2></div>';return}
@@ -2607,13 +2607,13 @@ function renderEmails(){
             const cls=pct>=successThreshold?'success':'danger';
             return`<tr>
                 <td><input type="checkbox" class="email-checkbox" data-survey-id="${s.id}" onchange="toggleSurveySelect('${s.id}',this)"></td>
-                <td><strong>${s.email}</strong></td>
+                <td><strong>Oda ${s.room_number||'?'}</strong></td>
                 <td>${s.room_number||'-'}</td>
                 <td>${date}</td>
                 <td><span class="stat-badge ${cls}">⭐${avg}</span></td>
                 <td>
-                    ${pct>=90?`<button class="btn btn-info" onclick="openReviewModal('${s.email}')">⭐ Yorum İste</button>`:' '}
-                    ${curUser.role==='admin'?`<button class="btn btn-danger" onclick="deleteSurvey('${s.id}','${s.email}')">🗑️</button>`:''}
+                    ${pct>=90?`<button class="btn btn-info" onclick="openReviewModal('')">⭐ Yorum İste</button>`:' '}
+                    ${curUser.role==='admin'?`<button class="btn btn-danger" onclick="deleteSurvey('${s.id}','Oda ${s.room_number||"?"}')">🗑️</button>`:''}
                 </td>
             </tr>`;
         }).join('')}</tbody>
@@ -2621,7 +2621,7 @@ function renderEmails(){
 }
 
 window.exportEmails=function(){
-    const emails=allSurveys.filter(s=>s.email).map(s=>{
+    const emails=allSurveys.map(s=>{
         let sum=0,cnt=0;
         DEPTS.forEach(d=>{
             const r=getRating(s,d.key);
@@ -2629,7 +2629,7 @@ window.exportEmails=function(){
         });
         const avg=cnt>0?(sum/cnt).toFixed(1):0;
         const date=new Date(s.created_at).toLocaleDateString('tr-TR');
-        return`${s.email},${s.room_number},${date},${avg}`;
+        return`${s.room_number},${date},${avg}`;
     });
     const csv='E-posta,Oda,Tarih,Puan\n'+emails.join('\n');
     const blob=new Blob([csv],{type:'text/csv'});
@@ -2816,7 +2816,6 @@ window.savePasswordChange = async function() {
 
 window.sendBulkReviewRequest = async function() {
     const highScores = allSurveys.filter(s => {
-        if (!s.email) return false;
         let sum = 0, cnt = 0;
         DEPTS.forEach(d => {
             const r = getRating(s, d.key);
@@ -3031,7 +3030,6 @@ window.generateDepartmentReport = function() {
         date: new Date(s.created_at).toLocaleDateString('tr-TR'),
         rating: getRating(s, deptKey),
         comment: s.comments || '',
-        email: s.email || 'Yok'
     })).filter(c => c.comment.length > 0);
     
     const dailyData = {};
@@ -3079,10 +3077,10 @@ window.exportDepartmentReport = function() {
         const time = new Date(s.created_at).toLocaleTimeString('tr-TR');
         const rating = getRating(s, deptKey);
         const comment = (s.comments || '').replace(/"/g, '""');
-        return `"${s.room_number}","${date}","${time}","${rating}","${s.email || 'Yok'}","${comment}"`;
+        return `"${s.room_number}","${date}","${time}","${rating}","${comment}"`;
     });
     
-    const csv = `Departman: ${dept.name}\nTarih Araligı: ${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')}\n\nOda,Tarih,Saat,Puan,E-posta,Yorum\n${rows.join('\n')}`;
+    const csv = `Departman: ${dept.name}\nTarih Araligı: ${start.toLocaleDateString('tr-TR')} - ${end.toLocaleDateString('tr-TR')}\n\nOda,Tarih,Saat,Puan,Yorum\n${rows.join('\n')}`;
     
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -4186,8 +4184,8 @@ window.toggleSelectAll = function(checkbox) {
     }
 }
 
-window.deleteSurvey = async function(surveyId, email) {
-    if (!confirm(`"${email}" adresine ait anketi silmek istediğinize emin misiniz?`)) {
+window.deleteSurvey = async function(surveyId, _unused) {
+    if (!confirm('Bu anketi silmek istediğinize emin misiniz?')) {
         return;
     }
     
