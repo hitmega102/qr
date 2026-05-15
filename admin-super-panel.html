@@ -1407,35 +1407,6 @@ window.deleteSurvey=async function(id,room){
     }catch(e){console.error(e);alert('Silme başarısız!')}
 }
 
-function {
-    const el=document.getElementById('emailsTable');
-    const emails=allSurveys;
-    selectedSurveyIds.clear();
-    document.getElementById('bulkActions').classList.remove('show');
-    if(!emails.length){el.innerHTML='<div class="empty-state"><div class="e-icon">📧</div><h2>E-posta yok</h2></div>';return}
-    el.innerHTML=`<table>
-        <thead><tr><th style="width:40px"><input type="checkbox" class="select-all-checkbox" onchange="toggleSelectAll(this)"></th><th>E-posta</th><th>Oda</th><th>Tarih</th><th>Ortalama Puan</th><th></th></tr></thead>
-        <tbody>${emails.map(s=>{
-            let sum=0,cnt=0;
-            DEPTS.forEach(d=>{const r=getRating(s,d.key);if(r>0){sum+=r;cnt++;}});
-            const avg=cnt>0?(sum/cnt).toFixed(1):0;
-            const date=new Date(s.created_at).toLocaleDateString('tr-TR');
-            const pct=cnt>0?(sum/cnt/5*100):0;
-            const cls=pct>=successThreshold?'success':'danger';
-            return`<tr>
-                <td><input type="checkbox" class="email-checkbox" data-survey-id="${s.id}" onchange="toggleSurveySelect('${s.id}',this)"></td>
-                <td><strong>Oda ${s.room_number||'?'}</strong></td>
-                <td>${s.room_number||'-'}</td>
-                <td>${date}</td>
-                <td><span class="stat-badge ${cls}">⭐${avg}</span></td>
-                <td>
-                    ${pct>=90?`<button class="btn btn-info" onclick="openReviewModal('')">⭐ Yorum İste</button>`:' '}
-                    ${curUser.role==='admin'?`<button class="btn btn-danger" onclick="deleteSurvey('${s.id}','Oda ${s.room_number||"?"}')">🗑️</button>`:''}
-                </td>
-            </tr>`;
-        }).join('')}</tbody>
-    </table>`;
-}
 
 
 window.openReviewModal=function(email,room){
