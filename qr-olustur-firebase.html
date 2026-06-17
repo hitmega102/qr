@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Kod Oluşturucu</title>
+    <title>Генератор QR-кодов</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -356,8 +356,8 @@
 <body>
 
 <div class="topbar">
-    <h1>🍽️ QR Kod Oluşturucu</h1>
-    <span>Tasarım özelleştirme destekli</span>
+    <h1>🍽️ Генератор QR-кодов</h1>
+    <span>Поддерживается индивидуальная настройка дизайна.</span>
 </div>
 
 <div class="layout">
@@ -368,20 +368,20 @@
         <!-- MOD SEÇİCİ -->
         <div class="section-title" style="margin-top:0;border-top:none;padding-top:0">Masa Tanımlama Modu</div>
         <div class="mode-tabs">
-            <button class="mode-tab active" onclick="setMode('numara',this)">🔢 Numara</button>
-            <button class="mode-tab" onclick="setMode('isim',this)">📝 İsim</button>
-            <button class="mode-tab" onclick="setMode('karisik',this)">🎯 İkisi</button>
+            <button class="mode-tab active" onclick="setMode('numara',this)">🔢 Номерной</button>
+            <button class="mode-tab" onclick="setMode('isim',this)">📝 Название</button>
+            <button class="mode-tab" onclick="setMode('karisik',this)">🎯 Оба</button>
         </div>
 
         <!-- NUMARA MODU -->
         <div id="mode-numara">
             <div class="two-col">
                 <div class="form-row">
-                    <label>Başlangıç No</label>
+                    <label>Начало №</label>
                     <input type="number" id="baslangic" value="1" min="1">
                 </div>
                 <div class="form-row">
-                    <label>Bitiş No</label>
+                    <label>Конец №</label>
                     <input type="number" id="bitis" value="10" min="1">
                 </div>
             </div>
@@ -390,8 +390,8 @@
         <!-- İSİM MODU -->
         <div id="mode-isim" style="display:none">
             <div class="form-row">
-                <label>Lokasyon İsimleri (her satıra bir isim)</label>
-                <textarea id="isimlerText" placeholder="VIP Lounge&#10;Havuz Başı&#10;Teras">VIP Lounge
+                <label>Названия пунктов (одно название на строку)</label>
+                <textarea id="isimlerText" placeholder="VIP Lounge&#10;У бассейна&#10;Терасса">VIP Lounge
 Havuz Başı
 Teras</textarea>
             </div>
@@ -400,7 +400,7 @@ Teras</textarea>
         <!-- KARISIK MODU -->
         <div id="mode-karisik" style="display:none">
             <div class="form-row">
-                <label>Format: NUMARA | İSİM</label>
+                <label>Формат: Номерной | İSİM</label>
                 <textarea id="karisikText" placeholder="1&#10;2 | VIP Masa&#10;Teras">1
 2 | VIP Masa
 3
@@ -411,12 +411,12 @@ Teras</textarea>
         <!-- GENEL BİLGİLER -->
         <div class="section-title">Kart Bilgileri</div>
         <div class="form-row">
-            <label>İşletme / Otel Adı</label>
-            <input type="text" id="isletmeAdi" value="Otelimize Hoş Geldiniz">
+            <label>Название предприятия</label>
+            <input type="text" id="isletmeAdi" value="Добро пожаловать в наше заведение!">
         </div>
         <div class="form-row">
-            <label>Alt Bilgi Yazısı</label>
-            <input type="text" id="altYazi" value="📱 QR'ı okutun, hizmet talep edin">
+            <label>Текст нижнего колонтитула</label>
+            <input type="text" id="altYazi" value="📱 Отсканируйте QR-код, чтобы заказать услугу.">
         </div>
 
         <!-- LOGO -->
@@ -425,46 +425,46 @@ Teras</textarea>
             <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
             <img id="logoPreview" class="logo-preview" style="display:none">
             <div class="logo-upload-text" id="logoUploadText">
-                🖼️ Logo yüklemek için tıklayın<br>
+                🖼️ Нажмите здесь, чтобы загрузить логотип.<br>
                 <small>PNG, JPG — max 2MB</small>
             </div>
         </div>
         <button onclick="clearLogo()" id="clearLogoBtn" style="display:none;width:100%;margin-top:6px;padding:7px;border:1px solid #ddd;border-radius:7px;background:white;font-size:12px;cursor:pointer;color:#999;">✕ Logoyu Kaldır</button>
 
         <!-- RENK TEMASI -->
-        <div class="section-title">Renk Teması</div>
+        <div class="section-title">Цветовая тема</div>
         <div class="color-grid" id="colorGrid">
             <!-- JS ile doldurulacak -->
         </div>
         <div class="custom-color-row">
-            <label>Özel renk:</label>
+            <label>Индивидуальный цвет:</label>
             <input type="color" id="customColor" value="#667eea" onchange="selectCustomColor(this.value)">
             <span id="customColorHex" style="font-size:12px;color:#666;">#667eea</span>
         </div>
 
         <!-- KART STİLİ -->
-        <div class="section-title">Kart Stili</div>
+        <div class="section-title">Стиль карты</div>
         <div class="style-grid">
             <div class="style-card selected" onclick="selectStyle('classic',this)">
                 <div class="style-card-preview" style="background:#f5f5f5;border:2px solid #ddd;">📋</div>
-                <div class="style-card-label">Klasik</div>
+                <div class="style-card-label">Классический</div>
             </div>
             <div class="style-card" onclick="selectStyle('modern',this)">
                 <div class="style-card-preview" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;">🎨</div>
-                <div class="style-card-label">Modern</div>
+                <div class="style-card-label">Модерн</div>
             </div>
             <div class="style-card" onclick="selectStyle('minimal',this)">
                 <div class="style-card-preview" style="background:white;border-top:4px solid #667eea;">✦</div>
-                <div class="style-card-label">Minimal</div>
+                <div class="style-card-label">Минимал</div>
             </div>
             <div class="style-card" onclick="selectStyle('dark',this)">
                 <div class="style-card-preview" style="background:#1a1a2e;border-radius:8px;">🌙</div>
-                <div class="style-card-label">Koyu</div>
+                <div class="style-card-label">Темный</div>
             </div>
         </div>
 
         <!-- QR BOYUTU -->
-        <div class="section-title">QR Boyutu</div>
+        <div class="section-title">Размер QR-кода</div>
         <div class="form-row">
             <input type="range" id="qrSize" min="120" max="220" value="160" style="width:100%"
                    oninput="document.getElementById('qrSizeVal').textContent=this.value+'px'">
@@ -473,21 +473,21 @@ Teras</textarea>
             </div>
         </div>
 
-        <button class="generate-btn" onclick="generateAll()">🎯 QR Kodları Oluştur</button>
-        <button class="print-btn" onclick="window.print()">🖨️ Yazdır / PDF</button>
+        <button class="generate-btn" onclick="generateAll()">🎯 Создание QR-кодов</button>
+        <button class="print-btn" onclick="window.print()">🖨️ Печать / PDF</button>
 
     </div>
 
     <!-- SAĞ: ÖNİZLEME -->
     <div class="preview-area">
         <div class="preview-header">
-            <h2>Önizleme</h2>
+            <h2>Предварительный просмотр</h2>
             <span class="preview-count" id="previewCount">0 QR</span>
         </div>
         <div class="qr-grid" id="qrGrid">
             <div class="empty-state">
                 <div>🎯</div>
-                <p>Sol panelden ayarları yapıp<br>"QR Kodları Oluştur" butonuna basın</p>
+                <p>Настройте параметры на левой панели и нажмите кнопку «Сгенерировать QR-коды».</p>
             </div>
         </div>
     </div>
@@ -495,7 +495,7 @@ Teras</textarea>
 </div>
 
 <script>
-    const BASE_URL = 'https://noxinndeluxe.github.io/qr/garson-cagir-firebase.html';
+    const BASE_URL = 'https://hitmega102.github.io/qr/garson-cagir-firebase.html';
 
     let currentMode  = 'numara';
     let currentColor = '#667eea';
