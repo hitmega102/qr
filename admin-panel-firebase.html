@@ -671,12 +671,12 @@
                 await updateDoc(doc(db, 'requests', id), {
                     status: 'completed', completedAt: now
                 });
-                showToast('✅ Tamamlandı', 'Talep başarıyla tamamlandı.');
-            } catch(e) { showToast('⚠️ Hata', 'İşlem başarısız.'); }
+                showToast('✅ Завершено', 'Запрос успешно выполнен.');
+            } catch(e) { showToast('⚠️ Ошибка', 'Операция не удалась.'); }
         };
 
         window.deleteRequest = async function(id) {
-            if (!confirm('Bu talebi silmek istediğinizden emin misiniz?')) return;
+            if (!confirm('Вы уверены, что хотите удалить этот запрос?')) return;
             try {
                 await deleteDoc(doc(db, 'requests', id));
                 showToast('🗑️ Silindi', 'Talep silindi.');
@@ -684,11 +684,11 @@
         };
 
         window.clearCompleted = async function() {
-            if (!confirm('Tamamlanan tüm talepleri silmek istediğinizden emin misiniz?')) return;
+            if (!confirm('Вы уверены, что хотите удалить все выполненные запросы?')) return;
             for (const req of allRequests.filter(r => r.status === 'completed')) {
                 try { await deleteDoc(doc(db, 'requests', req.id)); } catch(e) {}
             }
-            showToast('🗑️ Temizlendi', 'Tamamlanan talepler silindi.');
+            showToast('🗑️ Очищено', 'Выполненные запросы удалены.');
         };
 
         // ── REALTİME DİNLEYİCİ ───────────────────────────────────
@@ -700,7 +700,7 @@
             renderRequests();
             cleanupCompleted();
         }, err => {
-            document.getElementById('loading').textContent = '⚠️ Bağlantı hatası. Sayfayı yenileyin.';
+            document.getElementById('loading').textContent = '⚠️ Ошибка подключения. Обновите страницу.';
         });
 
         // Filtre butonları
