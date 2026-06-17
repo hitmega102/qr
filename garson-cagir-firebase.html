@@ -803,7 +803,7 @@
             const activeFoods = allFoods.filter(f => f.active !== false).sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 
             if (allCategories.length === 0 || activeFoods.length === 0) {
-                list.innerHTML = '<div class="menu-loading">Menü yakında güncellenecek.</div>';
+                list.innerHTML = '<div class="menu-loading">Меню будет обновлено в ближайшее время.</div>';
                 return;
             }
 
