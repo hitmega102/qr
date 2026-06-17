@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Şef Garson - Admin Panel</title>
+    <title>Шеф-оцифиант - Админ-панель</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -371,22 +371,22 @@
     </style>
 </head>
 <body>
-    <div class="loading" id="loading">🔄 Bağlanıyor...</div>
+    <div class="loading" id="loading">🔄 Подключение...</div>
 
     <div id="mainContent" style="display:none;">
         <div class="header">
-            <h1>👨‍🍳 Şef Garson Paneli</h1>
+            <h1>👨‍🍳 Шеф-официант панель</h1>
             <div class="stats">
                 <div class="stat-box pending">
-                    <div class="label">Bekleyen</div>
+                    <div class="label">Ожидающих</div>
                     <div class="value" id="pendingCount">0</div>
                 </div>
                 <div class="stat-box completed">
-                    <div class="label">Tamamlanan</div>
+                    <div class="label">Завершенных</div>
                     <div class="value" id="completedCount">0</div>
                 </div>
                 <div class="stat-box">
-                    <div class="label">Toplam</div>
+                    <div class="label">Всего</div>
                     <div class="value" id="totalCount">0</div>
                 </div>
             </div>
@@ -394,22 +394,22 @@
 
         <div class="controls">
             <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">Tümü</button>
-                <button class="filter-btn" data-filter="pending">Bekleyen</button>
-                <button class="filter-btn" data-filter="completed">Tamamlanan</button>
+                <button class="filter-btn active" data-filter="all">Все</button>
+                <button class="filter-btn" data-filter="pending">Ожидающие</button>
+                <button class="filter-btn" data-filter="completed">Завершенные</button>
             </div>
 
             <div class="view-toggle">
-                <button class="view-btn active" id="viewCards"   onclick="setView('cards')">🃏 Kartlar</button>
-                <button class="view-btn"         id="viewMasa"    onclick="setView('masa')">🪑 Masa Grubu</button>
+                <button class="view-btn active" id="viewCards"   onclick="setView('cards')">🃏 Карты</button>
+                <button class="view-btn"         id="viewMasa"    onclick="setView('masa')">🪑 Группа столов</button>
             </div>
 
             <div class="sound-toggle">
                 <input type="checkbox" id="soundToggle" checked>
-                <label for="soundToggle">🔊 Ses</label>
+                <label for="soundToggle">🔊 Звук</label>
             </div>
 
-            <button class="btn btn-secondary" onclick="clearCompleted()">🗑️ Tamamlananları Temizle</button>
+            <button class="btn btn-secondary" onclick="clearCompleted()">🗑️ Удалить завершенные</button>
         </div>
 
         <div class="requests-grid" id="requestsGrid"></div>
@@ -502,7 +502,7 @@
             if (pending > lastPendingCount) {
                 playNotificationSound();
                 const newest = allRequests.filter(r => r.status === 'pending')[0];
-                if (newest) showToast('🔔 Yeni Çağrı!', `Masa ${newest.masa} — ${newest.type}`);
+                if (newest) showToast('🔔 Новый вызов!', `Стол ${newest.masa} — ${newest.type}`);
             }
             lastPendingCount = pending;
         }
@@ -536,8 +536,8 @@
             grid.style.gridTemplateColumns = '';
             if (filtered.length === 0) {
                 grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-                    <div class="emoji">😴</div><h2>Henüz talep yok</h2>
-                    <p>Yeni çağrılar burada görünecek</p></div>`;
+                    <div class="emoji">😴</div><h2>Вызовов пока нет...</h2>
+                    <p>Новые вызовы будут отображаться здесь.</p></div>`;
                 return;
             }
 
@@ -556,27 +556,27 @@
                             </div>
                         </div>
                         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-                            ${isNew ? '<span class="new-badge">YENİ</span>' : ''}
+                            ${isNew ? '<span class="new-badge">НОВЫЙ</span>' : ''}
                             <div class="timer-badge ${tClass}">⏱️ ${formatTime(sec)}</div>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="info-row">
-                            <span class="info-label">Saat:</span>
+                            <span class="info-label">Время:</span>
                             <span class="info-value">${timeStr(req)}</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Durum:</span>
-                            <span class="info-value">${req.status === 'pending' ? '⏳ Bekliyor' : '✅ Tamamlandı'}</span>
+                            <span class="info-label">Статус:</span>
+                            <span class="info-value">${req.status === 'pending' ? '⏳ Ожидающий' : '✅ Завершенный'}</span>
                         </div>
                     </div>
                     ${req.status === 'pending' ? `
                     <div class="card-actions">
-                        <button class="action-btn complete" onclick="completeRequest('${req.id}')">✓ Tamamla</button>
+                        <button class="action-btn complete" onclick="completeRequest('${req.id}')">✓ Завершить</button>
                         <button class="action-btn delete"  onclick="deleteRequest('${req.id}')">🗑️</button>
                     </div>` : `
                     <div class="card-actions">
-                        <button class="action-btn delete" style="flex:1" onclick="deleteRequest('${req.id}')">🗑️ Sil</button>
+                        <button class="action-btn delete" style="flex:1" onclick="deleteRequest('${req.id}')">🗑️ Удалить</button>
                     </div>`}
                 </div>`;
             }).join('');
