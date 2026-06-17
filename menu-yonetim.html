@@ -821,7 +821,7 @@
     function renderCategories() {
         const list = document.getElementById('catList');
         if (categories.length === 0) {
-            list.innerHTML = '<p style="color:#bbb;font-size:13px;text-align:center;padding:10px">Henüz kategori yok</p>';
+            list.innerHTML = '<p style="color:#bbb;font-size:13px;text-align:center;padding:10px">Категории пока отсутствуют.</p>';
             return;
         }
         list.innerHTML = categories.map(cat => {
@@ -830,8 +830,8 @@
                          onclick="selectCat('${cat.id}')">
                 <span class="cat-item-name">${(cat.names && cat.names.tr) || cat.name}</span>
                 <span class="cat-item-count">${count}</span>
-                <button class="cat-delete-btn" title="Düzenle" onclick="event.stopPropagation();openCatModal('${cat.id}')">✏️</button>
-                <button class="cat-delete-btn" title="Sil" onclick="deleteCategory(event,'${cat.id}','${(cat.names&&cat.names.tr)||cat.name}')">×</button>
+                <button class="cat-delete-btn" title="Редактировать" onclick="event.stopPropagation();openCatModal('${cat.id}')">✏️</button>
+                <button class="cat-delete-btn" title="Удалить" onclick="deleteCategory(event,'${cat.id}','${(cat.names&&cat.names.tr)||cat.name}')">×</button>
             </div>`;
         }).join('');
     }
@@ -846,7 +846,7 @@
         if (id) {
             const cat = categories.find(c => c.id === id);
             if (!cat) return;
-            document.getElementById('catModalTitle').textContent = 'Kategoriyi Düzenle';
+            document.getElementById('catModalTitle').textContent = 'Редактировать категорию';
             document.getElementById('editCatId').value = id;
                     document.getElementById('catName_tr').value = (cat.names && cat.names.tr) || ('tr' === 'tr' ? cat.name || '' : '');
         document.getElementById('catName_en').value = (cat.names && cat.names.en) || ('en' === 'tr' ? cat.name || '' : '');
@@ -858,7 +858,7 @@
         document.getElementById('catName_cs').value = (cat.names && cat.names.cs) || ('cs' === 'tr' ? cat.name || '' : '');
         document.getElementById('catName_ro').value = (cat.names && cat.names.ro) || ('ro' === 'tr' ? cat.name || '' : '');
         } else {
-            document.getElementById('catModalTitle').textContent = 'Kategori Ekle';
+            document.getElementById('catModalTitle').textContent = 'Добавить категорию';
             document.getElementById('editCatId').value = '';
                     document.getElementById('catName_tr').value = '';
         document.getElementById('catName_en').value = '';
@@ -893,7 +893,7 @@
         const id = document.getElementById('editCatId').value;
         if (id) {
             await updateDoc(doc(db, "menuCategories", id), { names, name: cn_tr });
-            showToast('Kategori güncellendi ✅', 'green');
+            showToast('Категория обновлена ​​✅', 'green');
             await bumpMenuVersion();
         } else {
             await addDoc(collection(db, "menuCategories"), {
@@ -901,7 +901,7 @@
                 order: categories.length,
                 createdAt: serverTimestamp()
             });
-            showToast('Kategori eklendi ✅', 'green');
+            showToast('Категория добавлена ​​✅', 'green');
             await bumpMenuVersion();
         }
         closeCatModal();
@@ -911,8 +911,8 @@
         e.stopPropagation();
         const itemCount = foods.filter(f => f.cat === id).length;
         const msg = itemCount > 0
-            ? `"${name}" kategorisini ve içindeki ${itemCount} yemeği silmek istediğinize emin misiniz?`
-            : `"${name}" kategorisini silmek istediğinize emin misiniz?`;
+            ? `"${name}" Вы уверены, что хотите удалить категорию и содержащийся в ней продукт питания (${itemCount})?`
+            : `"${name}" Вы уверены, что хотите удалить категорию?`;
         if (!confirm(msg)) return;
 
         // Kategorideki yemekleri de sil
@@ -933,8 +933,8 @@
 
         if (!activeCat) {
             btn.style.display = 'none';
-            title.textContent = 'Kategori Seçin';
-            container.innerHTML = `<div class="empty-state"><div>👈</div><p>Sol taraftan bir kategori seçin</p></div>`;
+            title.textContent = 'Выберите категорию';
+            container.innerHTML = `<div class="empty-state"><div>👈</div><p>Выберите категорию в левой части экрана.</p></div>`;
             return;
         }
 
@@ -944,7 +944,7 @@
 
         const items = foods.filter(f => f.cat === activeCat);
         if (items.length === 0) {
-            container.innerHTML = `<div class="empty-state"><div>🍽️</div><p>Bu kategoride henüz yemek yok</p></div>`;
+            container.innerHTML = `<div class="empty-state"><div>🍽️</div><p>В этой категории пока нет блюд.</p></div>`;
             return;
         }
 
@@ -952,7 +952,7 @@
 
         container.innerHTML = `<div class="food-list" id="sortableList">` + items.map(item => `
             <div class="food-item ${item.active === false ? 'inactive' : ''}" data-id="${item.id}" draggable="true">
-                <div class="drag-handle" title="Sürükleyerek sırala">⠿</div>
+                <div class="drag-handle" title="Перетаскивание для сортировки.">⠿</div>
                 <div class="food-item-info">
                     <div class="food-item-name">${item.name}</div>
                     <div class="food-item-desc">${item.desc || '—'}</div>
@@ -960,9 +960,9 @@
                 <div class="food-item-actions">
                     <button class="toggle-btn ${item.active !== false ? 'active-state' : ''}"
                             onclick="toggleFood('${item.id}', ${item.active !== false})">
-                        ${item.active !== false ? '✓ Aktif' : '✗ Gizli'}
+                        ${item.active !== false ? '✓ Активно' : '✗ Скрыто'}
                     </button>
-                    <button class="btn btn-warning btn-sm" onclick="openEditFood('${item.id}')">Düzenle</button>
+                    <button class="btn btn-warning btn-sm" onclick="openEditFood('${item.id}')">Редактировать</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${item.id}', '${item.name.replace(/'/g,"\'")}')">Sil</button>
                 </div>
             </div>`).join('') + `</div>`;
