@@ -420,7 +420,7 @@ Teras</textarea>
         </div>
 
         <!-- LOGO -->
-        <div class="section-title">Logo (Opsiyonel)</div>
+        <div class="section-title">Логотип (по желанию)</div>
         <div class="logo-upload-area" id="logoUploadArea">
             <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
             <img id="logoPreview" class="logo-preview" style="display:none">
@@ -617,7 +617,7 @@ Teras</textarea>
     }
 
     function createCard(container, numara, isim, isletme, altYazi, qrSize) {
-        let baslik = numara && isim ? `Masa ${numara} — ${isim}` : numara ? `Masa ${numara}` : isim;
+        let baslik = numara && isim ? `Стол ${numara} — ${isim}` : numara ? `Masa ${numara}` : isim;
         const urlVal = numara || isim;
         const url    = `${BASE_URL}?masa=${encodeURIComponent(urlVal)}`;
         const qrId   = 'qr_' + Math.random().toString(36).slice(2);
