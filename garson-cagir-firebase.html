@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garson Çağır - Restoran Sistemi</title>
+    <title>Вызов официанта - Ресторанная система</title>
     <style>
         * {
             margin: 0;
@@ -327,36 +327,36 @@
                 <div class="lang-option" onclick="changeLang('ro')">🇷🇴 Română</div>
             </div>
             <h1 id="headerTitle">🍽️ Hoş Geldiniz</h1>
-            <p id="headerSubtitle">Size nasıl yardımcı olabiliriz?</p>
+            <p id="headerSubtitle">Чем мы можем вам помочь?</p>
         </div>
 
         <div class="content">
             <div class="masa-info">
-                <div class="label" id="tableLabel">Masa Numaranız</div>
-                <div class="masa-no" id="masaNo">12</div>
+                <div class="label" id="tableLabel">Номер стола</div>
+                <div class="masa-no" id="masaNo">1</div>
             </div>
 
             <div class="button-group">
                 <button class="btn btn-primary" id="waiterCallBtn" onclick="garsonCagir()">
                     <span class="emoji" id="btnEmoji">👨‍🍳</span>
-                    <span id="btnWaiter">Garson Çağır</span>
+                    <span id="btnWaiter">Вызвать официанта</span>
                 </button>
             </div>
 
             <div class="status-panel" id="statusPanel">
-                <h3 id="statusTitle">⏱️ Talebiniz Alındı</h3>
-                <p id="statusText">Garsonumuz en kısa sürede masanıza gelecektir.</p>
+                <h3 id="statusTitle">⏱️ Ваш запрос получен.</h3>
+                <p id="statusText">Наш официант скоро подойдет к вашему столику.</p>
             </div>
 
             <!-- MENÜ -->
             <div class="menu-section">
-                <div class="menu-divider" id="menuDividerTitle">İÇECEK MENÜSÜ</div>
+                <div class="menu-divider" id="menuDividerTitle">Меню</div>
                 <div class="menu-category-tabs" id="menuTabs">
-                    <div class="menu-loading">Yükleniyor...</div>
+                    <div class="menu-loading">Загрузка...</div>
                 </div>
                 <div class="menu-list" id="menuList"></div>
                 <div class="menu-allergen-note">
-                    ℹ️ <span id="allergenNote">Alerjeniniz varsa lütfen garsonumuzu bilgilendirin.</span>
+                    ℹ️ <span id="allergenNote">Пожалуйста, сообщите официанту, если у вас есть аллергия.</span>
                 </div>
             </div>
         </div>
@@ -412,8 +412,8 @@
                 flag: '🇷🇺',
                 headerTitle: '🍽️ Добро пожаловать',
                 headerSubtitle: 'Как мы можем вам помочь?',
-                tableLabel: 'Номер вашего стола',
-                btnWaiter: 'Позвать официанта',
+                tableLabel: 'Номер стола',
+                btnWaiter: 'Вызвать официанта',
                 statusTitle: '⏱️ Запрос получен',
                 waiterStatus: 'Официант скоро подойдёт к вашему столу. Среднее время ожидания: 2-3 минуты.',
                 waiterNotifTitle: '✅ Официант вызван!',
@@ -421,7 +421,7 @@
                 errorTitle: '⚠️ Ошибка',
                 errorText: 'Проблема с подключением. Пожалуйста, попробуйте снова.',
                 allergenNote: 'Сообщите нашему персоналу, если у вас есть аллергия.',
-                menuTitle: 'МЕНЮ НАПИТКОВ',
+                menuTitle: 'МЕНЮ',
                 allTab: 'Все',
                 cooldown: 'с — повторный вызов доступен через'
             },
@@ -547,7 +547,7 @@
 
         // URL'den masa numarasını al
         const urlParams = new URLSearchParams(window.location.search);
-        const masaNumarasi = urlParams.get('masa') || '12';
+        const masaNumarasi = urlParams.get('masa') || '1';
         document.getElementById('masaNo').textContent = masaNumarasi;
 
         // Dil algılama
@@ -640,9 +640,9 @@
                     timestamp: serverTimestamp(),
                     createdAt: new Date().toISOString()
                 });
-                console.log('✅ Talep Firebase\'e eklendi');
+                console.log('✅ Запрос добавлен в Firebase');
             } catch (error) {
-                console.error('❌ Firebase hatası:', error);
+                console.error('❌ Ошибка Firebase:', error);
                 const t = translations[currentLang];
                 showNotification(t.errorTitle, t.errorText, 'info');
             }
