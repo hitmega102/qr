@@ -494,11 +494,11 @@
 <div id="adminPanel">
     <div class="topbar">
         <div>
-            <h1>🍽️ Menü Yönetim Paneli</h1>
-            <span>Firebase bağlı — değişiklikler anında yayınlanır</span>
+            <h1>🍽️ Панель управления меню</h1>
+            <span>Firebase подключен — изменения публикуются мгновенно.</span>
         </div>
         <div class="topbar-right">
-            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+            <button class="logout-btn" onclick="logout()">Выйти</button>
         </div>
     </div>
 
@@ -507,14 +507,14 @@
         <!-- KATEGORİLER -->
         <div class="panel">
             <div class="panel-header">
-                <h2>📂 Kategoriler</h2>
+                <h2>📂 Категории</h2>
             </div>
             <div class="panel-body">
                 <div class="cat-list" id="catList">
-                    <div class="loading">Yükleniyor...</div>
+                    <div class="loading">Загрузка...</div>
                 </div>
                 <div class="add-cat-row">
-                    <button class="btn btn-success" style="width:100%" onclick="openCatModal()">+ Kategori Ekle</button>
+                    <button class="btn btn-success" style="width:100%" onclick="openCatModal()">+ Добавить категорию</button>
                 </div>
             </div>
         </div>
@@ -523,16 +523,16 @@
         <div class="panel">
             <div class="panel-header">
                 <div class="food-panel-header" style="width:100%">
-                    <h2>🥘 <span id="activeCatTitle">Kategori Seçin</span></h2>
+                    <h2>🥘 <span id="activeCatTitle">Выберите категорию</span></h2>
                     <button class="btn btn-primary btn-sm" onclick="openAddFood()" id="addFoodBtn"
-                            style="display:none;">+ Yemek Ekle</button>
+                            style="display:none;">+ Добавить блюдо</button>
                 </div>
             </div>
             <div class="panel-body">
                 <div id="foodList">
                     <div class="empty-state">
                         <div>👈</div>
-                        <p>Sol taraftan bir kategori seçin</p>
+                        <p>Выберите категорию в левой части экрана.</p>
                     </div>
                 </div>
             </div>
@@ -544,7 +544,7 @@
 <!-- YEMEK EKLE/DÜZENLE MODAL -->
 <div class="modal-overlay" id="foodModal">
     <div class="modal">
-        <h3 id="modalTitle">Yemek Ekle</h3>
+        <h3 id="modalTitle">Добавить блюдо</h3>
         <input type="hidden" id="editFoodId">
 
         <div class="lang-tabs" id="langTabs">
@@ -577,11 +577,11 @@
                 <div class="lang-panel " id="panel_ru">
                     <div class="lang-panel-header">🇷🇺 Rusça</div>
                     <div class="form-group">
-                        <label>Yemek Adı</label>
+                        <label>Название блюда</label>
                         <input type="text" id="foodName_ru" placeholder="">
                     </div>
                     <div class="form-group">
-                        <label>Açıklama</label>
+                        <label>Описание</label>
                         <input type="text" id="foodDesc_ru" placeholder="">
                     </div>
                 </div>
@@ -657,8 +657,8 @@
             <select id="foodCat"></select>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal()">İptal</button>
-            <button class="btn btn-primary" onclick="saveFood()">Kaydet</button>
+            <button class="btn btn-outline" onclick="closeModal()">Отмена</button>
+            <button class="btn btn-primary" onclick="saveFood()">Сохранить</button>
         </div>
     </div>
 </div>
