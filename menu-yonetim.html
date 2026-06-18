@@ -963,7 +963,7 @@
                         ${item.active !== false ? '✓ Активно' : '✗ Скрыто'}
                     </button>
                     <button class="btn btn-warning btn-sm" onclick="openEditFood('${item.id}')">Редактировать</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${item.id}', '${item.name.replace(/'/g,"\'")}')">Sil</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteFoodItem('${item.id}', '${item.name.replace(/'/g,"\'")}')">Удалить</button>
                 </div>
             </div>`).join('') + `</div>`;
 
