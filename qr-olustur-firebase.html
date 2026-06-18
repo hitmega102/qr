@@ -400,9 +400,9 @@ Teras</textarea>
         <!-- KARISIK MODU -->
         <div id="mode-karisik" style="display:none">
             <div class="form-row">
-                <label>Формат: Номерной | İSİM</label>
-                <textarea id="karisikText" placeholder="1&#10;2 | VIP Masa&#10;Teras">1
-2 | VIP Masa
+                <label>Формат: Номер | Название</label>
+                <textarea id="karisikText" placeholder="1&#10;2 | VIP Стол&#10;Teras">1
+2 | VIP Стол
 3
 Teras</textarea>
             </div>
@@ -617,7 +617,7 @@ Teras</textarea>
     }
 
     function createCard(container, numara, isim, isletme, altYazi, qrSize) {
-        let baslik = numara && isim ? `Стол ${numara} — ${isim}` : numara ? `Masa ${numara}` : isim;
+        let baslik = numara && isim ? `Стол ${numara} — ${isim}` : numara ? `Стол ${numara}` : isim;
         const urlVal = numara || isim;
         const url    = `${BASE_URL}?masa=${encodeURIComponent(urlVal)}`;
         const qrId   = 'qr_' + Math.random().toString(36).slice(2);
